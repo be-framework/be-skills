@@ -81,14 +81,22 @@ FinalのコンストラクタでDB保存・通知などの副作用は正当。
 複数ステップの処理もBeの中で自己完結する。FinalがBecomingInterfaceをInjectして別の変換を起動：
 
 ```php
+interface BecomingInterface
+{
+    /** @return object The final form after all transformations */
+    public function __invoke(object $input): object;
+}
+```
+
+```php
 final readonly class OrderCompleted
 {
     public function __construct(
         #[Input] string $orderId,
         #[Inject] BecomingInterface $becoming,
     ) {
-        $this->becoming->become(new AllocateStockInput($orderId));
-        $this->becoming->become(new SendReceiptInput($orderId));
+        ($this->becoming)(new AllocateStockInput($orderId));
+        ($this->becoming)(new SendReceiptInput($orderId));
     }
 }
 ```
