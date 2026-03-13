@@ -5,11 +5,23 @@ Agent skills for building applications with the [Be Framework](https://github.co
 ## Skills
 
 - **[be](be/SKILL.md)** — Development workflow: from user stories to ALPS profiles to implementation
+- **[be-semantic](be-semantic/SKILL.md)** — Story → ALPS → Fake → Agreement → Schema → Be workflow
 - **[semantic-ex](semantic-ex/SKILL.md)** — Semantic Exercise: AI-driven data generation → constraint discovery → JSON Schema
 
-## Usage
+## Installation
 
-These skills are designed for AI coding agents (Claude, etc.). Point your agent at the relevant `SKILL.md` to teach it how to build Be applications.
+### Claude Code Plugin
+
+```bash
+claude plugin marketplace add be-framework/skills
+claude plugin install be-framework-skills
+```
+
+All skills are automatically available after installation.
+
+### Manual
+
+Point your agent at the relevant `SKILL.md` to teach it how to build Be applications.
 
 ## Philosophy
 

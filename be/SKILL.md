@@ -1,3 +1,8 @@
+---
+name: be
+description: "Be Framework development skill. Use when building PHP applications with the Be Framework, implementing Input/Semantic/Final patterns, CQRS with Ray.MediaQuery, or when the user mentions Be Framework, becoming pattern, or resource-oriented architecture."
+---
+
 # Be Framework Skill
 
 Beは「AIに仕事をさせるための解像度を上げるプロセス」を内包したフレームワーク。
@@ -34,6 +39,7 @@ Beの開発フローは、各ステップで解像度を上げていく：
 Semantic-Ex：AIがデータを生成し、AIが観察して制約を「発見」する（ボトムアップ）
 
 AIの特性がこのプロセスを可能にしている：
+
 - **大量生成が得意** — 人間が50件作ると品質が落ちる。500件は無理。AIは一瞬
 - **自己評価にバイアスがない** — 自分が生成したデータを別の目でフラットに評価できる。人間は自分の作品にバイアスがかかる
 - **パターン抽出が得意** — 50件から最長文字数、null率、境界値を一瞬で抽出
@@ -70,12 +76,14 @@ src/
 `App/` は不要。Beの標準構造で全て収まる。
 
 ### Finalでの副作用：doing for being
+
 FinalのコンストラクタでDB保存・通知などの副作用は正当。
 「永続化した存在になる」ための行動（doing for being）。
 
-**ただし常に問え：「この doing は本当にこの being に不可欠か？」**
+ただし常に問え：「この doing は本当にこの being に不可欠か？」
 
 ### Potential（@link phpdoc）
+
 Finalの `_links`（ランタイムハイパーメディア）はBEAR.Sundayの `#[Link]` 属性が担う。
 Beでは、次のbecomingへの潜在性をphpdocで記述する：
 
@@ -95,6 +103,7 @@ BEAR.Sundayはこのphpdocを見て `#[Link(rel: 'goTodoList', href: '/todos')]`
 Beが設計図、BEARが配線。
 
 ### オーケストレーション：BecomingInterface
+
 複数ステップの処理もBeの中で自己完結する：
 
 ```php
@@ -121,6 +130,7 @@ final readonly class OrderCompleted
 BEAR.Sundayは入口（HTTP → Input）だけを担う。
 
 ### 変換パターン
+
 - **Direct**: Input → Final
 - **Multi-stage**: Input → Being → Final
 - **Diamond Pattern**: 複数の並行パイプライン → 1つのFinalに収束
@@ -163,11 +173,13 @@ $this->install(new FakeQueryModule($fakeDir, $interfaceDir));
 ```
 
 フィクスチャ:
+
 - `var/fake/todo_item.json` — 単一エンティティ（snake_case → camelCase自動変換）
 - `var/fake/todo_list.jsonl` — コレクション（1行1オブジェクト）
 - voidメソッド（Command）はファイル不要（no-opとして動作）
 
 ### 開発フェーズ
+
 ```
 Phase 1: Be + FakeQuery     ← ドメインロジック、DBなし
 Phase 2: Be + MediaQuery    ← var/sql/ にSQLファイル追加
@@ -184,6 +196,7 @@ Phase 3: BEAR.Sunday + Be   ← HTTP層でラップ、@link → #[Link]
 その後にDBを読み戻して確認するのは「存在を疑う」行為 — CRUDテストの発想。
 
 Beのテストは：
+
 - Finalが正しいクラスとして生成されること
 - プロパティが期待値を持つこと
 - Semanticバリデーションが不正入力を拒否すること
@@ -195,17 +208,20 @@ Command/Queryの結合テストはMedia層の責任として分離する。
 ## 実装ルール
 
 ### Semantic変数
+
 - クラス名がコンストラクタのパラメータ名と対応（`TodoTitle` → `$todoTitle`）
 - `#[Validate]` メソッドの引数はパラメータの実際の型に合わせる
 - nullable（`string|null`）の場合、バリデーターも `string|null` にしてnullを早期リターン
 
 ### Finalクラス
+
 - `final readonly class`
 - `#[Input]` で前段のデータを受け取る
 - `#[Inject]` でDI（Command/Queryなど）を受け取る
 - `@link` phpdocでPotential（次のbecomingへの潜在性）を記述
 
 ### ULIDの生成
+
 - Reason/UlidGeneratorInterface + Reason/UlidGenerator として分離（テスタビリティ）
 - Crockford's Base32: `0123456789ABCDEFGHJKMNPQRSTVWXYZ`
 - `base_convert` は使わない（I, L, O, U を生成する）

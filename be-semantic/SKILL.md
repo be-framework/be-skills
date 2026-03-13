@@ -1,3 +1,8 @@
+---
+name: be-semantic
+description: "End-to-end Be application design workflow: Story → ALPS → Fake data → Agreement → JSON Schema → Be implementation. Use when designing a new Be application from scratch, converting user stories into ALPS profiles, or when the user wants the full semantic-driven development flow."
+---
+
 # be-semantic Skill
 
 **be-semantic** は、ユーザーの意図から始まり、意味論を経由してBeアプリを設計・実装するワークフロー。
@@ -24,6 +29,7 @@
 **AIの役割**: ユーザーがアプリの機能を「ユーザーストーリー」として書くのを支援する。
 
 **形式**（必須）:
+
 ```
 ユーザーとして、
 [アクション]したい。
@@ -43,12 +49,14 @@
 **AIの役割**: ストーリーからALPSプロファイルを作成する。
 
 **ツール**: `asd` コマンド
+
 ```bash
 brew install alps-asd/asd/asd  # インストール
 asd alps/todo.json              # バリデーション + HTML生成
 ```
 
 **ALPSの基本構造**:
+
 ```json
 {
   "$schema": "https://alps-io.github.io/schemas/alps.json",
@@ -69,7 +77,8 @@ asd alps/todo.json              # バリデーション + HTML生成
 }
 ```
 
-**命名規則**: 
+**命名規則**:
+
 - `go` プレフィックス → safe（読み取り）
 - `do` プレフィックス → unsafe/idempotent（書き込み）
 
@@ -84,6 +93,7 @@ asd alps/todo.json              # バリデーション + HTML生成
 **重要**: ランダムなテストデータではなく、「実際のユーザーが日常的に作るようなデータ」を生成する。
 
 **生成プロンプト**:
+
 ```
 以下のALPSプロファイルに基づいて、[アプリ名]のリアルなフェイクデータを50件生成してください。
 実際のユーザーが日常的に使うような内容にしてください。
@@ -102,12 +112,14 @@ asd alps/todo.json              # バリデーション + HTML生成
 **AIの役割**: フェイクデータを分析し、制約の候補をユーザーに提示する。確認を取る。
 
 **分析項目**:
+
 - テキストフィールドの長さ分布（最短・最長・平均）
 - Optional フィールドの null 率
 - 値のパターンと範囲
 - エッジケース
 
 **提示形式**:
+
 ```
 観察結果:
 - todoTitle: 最長41文字 → maxLength: 80 でどうでしょうか？
@@ -126,12 +138,14 @@ asd alps/todo.json              # バリデーション + HTML生成
 **AIの役割**: 合意した制約をJSONスキーマとして記述する。
 
 **原則**:
+
 - `maxLength` は観察値ベースで設定（255のようなデフォルト値は使わない）
 - `required` は「フェイクデータで常に存在するフィールド」のみ
 - ALPS の `descriptor` id をプロパティ名として使う（一貫性）
 - スキーマには観察根拠をコメントで記述する（`$comment`）
 
 **例**:
+
 ```json
 {
   "todoTitle": {
@@ -152,12 +166,14 @@ asd alps/todo.json              # バリデーション + HTML生成
 Be実装の詳細は `skills/be/SKILL.md` を参照。
 
 **スキーマとBeの接続**:
+
 - JSONスキーマの `required` → Being のコンストラクタ引数
 - JSONスキーマの `properties` → 型とSemantic変数
 - ALPS `safe` ディスクリプタ → Being（読み取り）
 - ALPS `unsafe/idempotent` ディスクリプタ → Final（書き込み）
 
 **セットアップ**:
+
 ```bash
 composer require be-framework/be:0.x-dev ray/di:^2.18
 ```
