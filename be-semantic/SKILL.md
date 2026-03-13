@@ -183,12 +183,23 @@ asd alps/todo.xml               # バリデーション + HTML生成
 
 Be実装の詳細は `skills/be/SKILL.md` を参照。
 
+**Beの変換モデル**: Input（起点）→ Final（終点）が基本。Beingは分岐が必要な場合のみ。
+
+**ALPS → Be のマッピング**:
+
+| ALPS                 | Be パターン                  | 例                                                                           |
+| -------------------- | ---------------------------- | ---------------------------------------------------------------------------- |
+| `safe`（go〜）       | Input → Final（直接変換）    | `GetTodoListInput` → `TodoList`                                              |
+| `unsafe`（do〜）     | Input → Final（直接変換）    | `CreateTodoInput` → `TodoCreated`                                            |
+| `idempotent`（do〜） | Input → Final（直接変換）    | `CompleteTodoInput` → `TodoCompleted`                                        |
+| 分岐が必要な操作     | Input → Being → Final A or B | `PatientArrival` → `TriageAssessment` → `EmergencyCase` or `ObservationCase` |
+
 **スキーマとBeの接続**:
 
-- JSONスキーマの `required` → Being のコンストラクタ引数
+- JSONスキーマの `required` → Input のコンストラクタ引数
 - JSONスキーマの `properties` → 型とSemantic変数
-- ALPS `safe` ディスクリプタ → Being（読み取り）
-- ALPS `unsafe/idempotent` ディスクリプタ → Final（書き込み）
+- ALPS セマンティックディスクリプタ id → Input/Final のプロパティ名
+- ALPS 表現（TodoList等）→ Final クラス名の候補
 
 **セットアップ**: `be/SKILL.md` の「プロジェクト開始」セクションに従い、app templateからプロジェクトを作成する。
 

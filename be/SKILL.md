@@ -215,6 +215,84 @@ BEAR.Sundayは入口（HTTP → Input）だけを担う。
 
 各パターンの概念と詳細なコード例は [llms-full.txt](https://be-framework.github.io/llms-full.txt) を参照。
 
+### Beingクラス：分岐が必要なとき
+
+Beingは中間変換。`$being` プロパティ（Union型）で次の変身先を決定する。
+分岐が不要ならBeingは使わない（Direct: Input → Final）。
+
+```php
+// Being/TriageAssessment.php
+#[Be([EmergencyCase::class, ObservationCase::class])]
+final readonly class TriageAssessment
+{
+    public Emergency|Observation $being;
+
+    public function __construct(
+        #[Input] public float $bodyTemperature,
+        #[Input] public int $heartRate,
+        #[Inject] JTASProtocol $protocol,
+    ) {
+        $urgency = $protocol->assess($bodyTemperature, $heartRate);
+        $this->being = ($urgency === 'emergency')
+            ? new Emergency()
+            : new Observation();
+    }
+}
+```
+
+Frameworkが `$being` の型を見て、対応するFinalクラスを自動選択する。
+
+### Module/AppModule と実行
+
+```php
+// Module/AppModule.php
+use Ray\Di\AbstractModule;
+use Ray\MediaQuery\FakeQueryModule;
+
+final class AppModule extends AbstractModule
+{
+    protected function configure(): void
+    {
+        $fakeDir = dirname(__DIR__, 2) . '/var/fake';
+        $interfaceDir = __DIR__ . '/../Reason/Media';
+        $this->install(new FakeQueryModule($fakeDir, $interfaceDir));
+    }
+}
+```
+
+```php
+// bin/app.php（エントリポイント）
+$injector = new Injector(new AppModule());
+$becoming = new Becoming($injector, 'MyApp\\Semantic');
+
+$result = $becoming(new CreateTodoInput(todoTitle: '牛乳を買う'));
+echo $result->todoId; // 生成されたTodoのID
+```
+
+### エラーハンドリング
+
+Semantic変数のバリデーション失敗は `SemanticVariableException` に自動収集される：
+
+```php
+try {
+    $result = $becoming(new CreateTodoInput(todoTitle: ''));
+} catch (SemanticVariableException $e) {
+    // 全バリデーションエラーが一括で収集される
+    $messages = $e->getErrors()->getMessages('ja');
+    // ["タイトルは空にできません"]
+}
+```
+
+例外クラスに `#[Message]` で多言語メッセージを定義：
+
+```php
+#[Message([
+    'en' => 'Title cannot be empty.',
+    'ja' => 'タイトルは空にできません。',
+])]
+final class EmptyTodoTitleException extends DomainException {}
+```
+
 ---
 
 ## DB操作：CQRS + Ray.MediaQuery
