@@ -181,7 +181,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 
 ## Step 6：Be実装
 
-Be実装の詳細は `skills/be/SKILL.md` を参照。
+Be実装の詳細は `be/SKILL.md` を参照。
 
 **Beの変換モデル**: Input（起点）→ Final（終点）が基本。Beingは分岐が必要な場合のみ。
 
