@@ -1,0 +1,19 @@
+{
+  "name": "be-framework-skills",
+  "metadata": {
+    "description": "Agent skills for building applications with the Be Framework — from user stories to ALPS profiles to JSON Schema to implementation"
+  },
+  "owner": {
+    "name": "Be Framework",
+    "email": "be-framework@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "be-framework-skills",
+      "description": "Skills for building applications with the Be Framework",
+      "source": "./",
+      "strict": false,
+      "skills": ["./be", "./be-semantic", "./semantic-ex"]
+    }
+  ]
+}
