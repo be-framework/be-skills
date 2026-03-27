@@ -13,7 +13,7 @@ Agent skills for building applications with the [Be Framework](https://github.co
 ### Claude Code Plugin
 
 ```bash
-claude plugin marketplace add be-framework/skills
+claude plugin marketplace add be-framework/be-skills
 claude plugin install be-framework-skills
 ```
 
