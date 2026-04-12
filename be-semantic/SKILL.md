@@ -46,43 +46,61 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 ## Step 2：ALPSプロファイル
 
-**AIの役割**: ストーリーからALPSプロファイルを作成する。
+**AIの役割**: ストーリーからALPSプロファイルをXMLで作成する。APIの状態遷移と内部の変容チェーンを1つのファイルにタグで区別して記述する。
 
 **ツール**: `asd` コマンド
 
 ```bash
 brew install alps-asd/asd/asd  # インストール
-asd alps/todo.json              # バリデーション + HTML生成
+asd alps/todo.xml               # バリデーション + HTML生成
 ```
 
-**ALPSの基本構造**:
+**ALPSの構造**（XML推奨 — コメントで構造を整理できる）:
 
-```json
-{
-  "$schema": "https://alps-io.github.io/schemas/alps.json",
-  "alps": {
-    "descriptor": [
-      // セマンティクスディスクリプタ（データ要素）
-      {"id": "todoId", "title": "Todo ID", "def": "https://schema.org/identifier"},
-      {"id": "todoTitle", "title": "タイトル"},
+```xml
+<alps version="1.0">
 
-      // 表現（複合ビュー）
-      {"id": "TodoList", "descriptor": [{"href": "#todoId"}, ...]},
+  <!-- Ontology: 共有セマンティクス -->
+  <descriptor id="todoId" title="Todo ID" def="https://schema.org/identifier" />
+  <descriptor id="todoTitle" title="タイトル" />
+  <descriptor id="isCompleted" title="完了状態" />
 
-      // 操作（遷移）
-      {"id": "goTodoList", "type": "safe", "rt": "#TodoList"},
-      {"id": "doCreateTodo", "type": "unsafe", "rt": "#TodoList", "descriptor": [...]}
-    ]
-  }
-}
+  <!-- Taxonomy: 状態（表現） -->
+  <descriptor id="TodoList" type="semantic">
+    <descriptor href="#todoId" />
+    <descriptor href="#todoTitle" />
+    <descriptor href="#isCompleted" />
+  </descriptor>
+
+  <!-- Choreography: API遷移（ユーザーから見える） -->
+  <descriptor id="goTodoList" type="safe" rt="#TodoList" tag="api" />
+  <descriptor id="doCreateTodo" type="unsafe" rt="#TodoList" tag="api">
+    <descriptor href="#todoTitle" />
+  </descriptor>
+
+  <!-- Choreography: Be変容（内部の変容チェーン） -->
+  <descriptor id="TodoValidation" type="semantic" tag="be">
+    <doc>Semantic変数による入力検証の中間状態</doc>
+    <descriptor href="#todoTitle" />
+  </descriptor>
+  <descriptor id="becomeValidated" type="unsafe" rt="#TodoValidation" tag="be" />
+
+</alps>
 ```
+
+**タグの使い分け**:
+
+- `tag="api"` — API遷移（ユーザーに見える状態遷移）
+- `tag="be"` — 内部変容（Being、中間状態、変容遷移）
+- タグなし — オントロジー、タクソノミー（共有）
 
 **命名規則**:
 
 - `go` プレフィックス → safe（読み取り）
 - `do` プレフィックス → unsafe/idempotent（書き込み）
+- `become` プレフィックス → 内部変容遷移（Be固有）
 
-**アウトプット**: `alps/[name].json` + `alps/[name].html`（asd生成）
+**アウトプット**: `alps/[name].xml` + `alps/[name].html`（asd生成）
 
 ---
 
@@ -172,11 +190,7 @@ Be実装の詳細は `skills/be/SKILL.md` を参照。
 - ALPS `safe` ディスクリプタ → Being（読み取り）
 - ALPS `unsafe/idempotent` ディスクリプタ → Final（書き込み）
 
-**セットアップ**:
-
-```bash
-composer require be-framework/be:0.x-dev ray/di:^2.18
-```
+**セットアップ**: `be/SKILL.md` の「プロジェクト開始」セクションに従い、app templateからプロジェクトを作成する。
 
 ---
 
@@ -197,6 +211,6 @@ git clone https://github.com/koriym/be-semantic.git
 ```
 
 - `example/story/main.md` — ストーリーのサンプル
-- `example/alps/todo.json` — ALPSプロファイルのサンプル
+- `example/alps/todo.xml` — ALPSプロファイルのサンプル
 - `example/fake/data-50.json` — 50件フェイクデータのサンプル
 - `example/schema/` — スキーマのサンプル
