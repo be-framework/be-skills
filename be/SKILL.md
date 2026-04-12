@@ -71,7 +71,19 @@ src/
 
 ### Reason/ — 存在を可能にするもの
 
-- **Entity/** — 存在の実体定義。`final readonly class`。Media/の外に置く（FakeQueryModuleがMedia/をスキャンするため）
+- **Entity/** — Queryの戻り値型。Media/の外に置く（FakeQueryModuleがMedia/をスキャンするため）
+
+```php
+// Reason/Entity/TodoEntity.php
+final readonly class TodoEntity
+{
+    public function __construct(
+        public string $todoId,    // SQL: todo_id → camelCase自動変換
+        public string $todoTitle,
+        public bool $isCompleted,
+    ) {}
+}
+```
 - **Media/Command/** — 書き込みインターフェース。`#[DbQuery]` 属性付き
 - **Media/Query/** — 読み取りインターフェース。`#[DbQuery]` 属性付き
 - **判断ロジック**（例: JTASProtocol — どの存在になるかを決める）
