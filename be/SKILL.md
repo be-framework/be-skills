@@ -209,6 +209,33 @@ Beのテストは：
 - プロパティが期待値を持つこと
 - Semanticバリデーションが不正入力を拒否すること
 
+```php
+class TodoCompletedTest extends TestCase
+{
+    private BecomingInterface $becoming;
+
+    protected function setUp(): void
+    {
+        $injector = new Injector(new AppModule());
+        $this->becoming = $injector->getInstance(BecomingInterface::class);
+    }
+
+    public function testComplete(): void
+    {
+        $final = ($this->becoming)(new CompleteTodoInput('todo-123'));
+
+        $this->assertInstanceOf(TodoCompleted::class, $final);
+        $this->assertSame('todo-123', $final->todoId);
+    }
+
+    public function testRejectsEmptyId(): void
+    {
+        $this->expectException(SemanticVariableException::class);
+        ($this->becoming)(new CompleteTodoInput(''));
+    }
+}
+```
+
 Command/Queryの結合テストはMedia層の責任として分離する。
 
 ---
