@@ -62,9 +62,10 @@ AIの特性がこのプロセスを可能にしている：
 src/
 ├── Input/      起点。#[Be([TargetClass::class])] で変換先を宣言
 ├── Semantic/   セマンティック変数（バリデーター）。クラス名=パラメータ名(camelCase)
+├── Exception/  ドメイン例外。#[Message]で多言語メッセージ
 ├── Final/      終点。#[Input]でデータ受け取り、#[Inject]でDI注入
 ├── Reason/     「その存在を可能にするもの」すべて
-│   ├── Entity/ 存在の実体定義（MediaQueryのhydration先）
+│   ├── Entity/ Queryの戻り値型（MediaQueryのhydration先）
 │   └── Media/  CQRS: Command（書き込み）/ Query（読み取り）
 └── Module/     Ray.Di設定
 ```
