@@ -35,6 +35,21 @@ composer create-project be-framework/skeleton my-todo-app
 
 回答に基づいて `composer.json` の `name`、`autoload.psr-4` のnamespace、および `src/` 内の全PHPファイルのnamespaceを書き換える。composer.jsonの依存関係はskeletonに含まれている。自作しない。
 
+### skeletonのコードを正解パターンとして読む
+
+コード生成の前に、skeletonに含まれるHello World実装を**必ず**全て読む：
+
+- `src/Input/HelloInput.php` — `#[Be]` の書き方
+- `src/Final/Hello.php` — `#[Input]` + `#[Inject]` の書き方
+- `src/Semantic/Name.php` — Semantic変数の書き方
+- `src/Exception/EmptyNameException.php` — ドメイン例外の書き方
+- `src/Reason/Greeting.php` — Reasonクラスの書き方
+- `src/Module/AppModule.php` — Ray.Di設定の書き方
+- `tests/HelloTest.php` — テストの書き方
+- `composer.json` — 依存関係とautoload
+
+**llms-full.txtは概念リファレンス。skeletonは動作する正解コード。** 新しいコードを書く時は、skeletonの`use`文、FQCN、パターンをそのまま踏襲する。推測で別のnamespaceを使わない。
+
 ---
 
 ## 哲学：解像度を上げるプロセス
