@@ -57,36 +57,34 @@ npm install -g @alps-asd/app-state-diagram       # cross-platform
 asd alps/todo.xml               # バリデーション + HTML生成
 ```
 
-**ALPSの構造**（XML推奨 — コメントで構造を整理できる）:
+**ALPSの構造**（XML推奨 — コメントで構造を整理できる。コメントは簡潔に）:
 
 ```xml
 <alps version="1.0">
-
-  <!-- Ontology: 共有セマンティクス -->
+  <!-- Ontology -->
   <descriptor id="todoId" title="Todo ID" def="https://schema.org/identifier" />
   <descriptor id="todoTitle" title="タイトル" />
   <descriptor id="isCompleted" title="完了状態" />
 
-  <!-- Taxonomy: 状態（表現） -->
+  <!-- Taxonomy -->
   <descriptor id="TodoList" type="semantic">
     <descriptor href="#todoId" />
     <descriptor href="#todoTitle" />
     <descriptor href="#isCompleted" />
   </descriptor>
 
-  <!-- Choreography: API遷移（ユーザーから見える） -->
+  <!-- Choreography: API -->
   <descriptor id="goTodoList" type="safe" rt="#TodoList" tag="api" />
   <descriptor id="doCreateTodo" type="unsafe" rt="#TodoList" tag="api">
     <descriptor href="#todoTitle" />
   </descriptor>
 
-  <!-- Choreography: Be変容（内部の変容チェーン） -->
+  <!-- Choreography: Be -->
   <descriptor id="TodoValidation" type="semantic" tag="be">
     <doc>Semantic変数による入力検証の中間状態</doc>
     <descriptor href="#todoTitle" />
   </descriptor>
   <descriptor id="becomeValidated" type="unsafe" rt="#TodoValidation" tag="be" />
-
 </alps>
 ```
 

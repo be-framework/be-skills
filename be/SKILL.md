@@ -22,10 +22,12 @@ Be Frameworkの概念（変換公式、意味変数、存在理由層、Potentia
 
 ## プロジェクト開始
 
-[app template](https://github.com/be-framework/app) からプロジェクトを作成する。開始時にユーザーに以下を確認：
+[app template](https://github.com/be-framework/app) からプロジェクトを作成する。**コード生成の前に必ず**ユーザーに以下を確認すること：
 
 1. **プロジェクト名** — ディレクトリ名に使用（例: `my-todo-app`）
 2. **namespace** — vendor/package形式（例: `MyCompany\TodoApp`）
+
+確認なしにコード生成を始めてはならない。
 
 ```bash
 composer create-project be-framework/app my-todo-app
@@ -265,6 +267,8 @@ class TodoCompletedTest extends TestCase
     }
 }
 ```
+
+テストは作成したら必ず実行して全てパスすることを確認する。
 
 Command/Queryの結合テストはMedia層の責任として分離する。
 
