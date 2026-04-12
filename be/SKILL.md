@@ -146,45 +146,31 @@ BEAR.Sundayは入口（HTTP → Input）だけを担う。
 
 ---
 
-## CQRS + Ray.MediaQuery / Ray.FakeQuery
+## DB操作：CQRS + Ray.MediaQuery
 
-リポジトリパターンではなくCQRSを採用：
+リポジトリパターンではなくCQRSを採用。DB操作は `Reason/Media/` のインターフェースで行う。
 
-```php
-// Reason/Media/Command/TodoCommandInterface.php
-interface TodoCommandInterface
-{
-    #[DbQuery('todo_add')]
-    public function add(string $todoId, string $todoTitle, ...): void;
+- **Ray.MediaQuery**: https://github.com/ray-di/Ray.MediaQuery
+- **Ray.FakeQuery**: https://github.com/ray-di/Ray.FakeQuery （Phase 1用）
 
-    #[DbQuery('todo_complete')]
-    public function complete(string $todoId): void;
-}
+### Beプロジェクトでの配置
 
-// Reason/Media/Query/TodoQueryInterface.php
-interface TodoQueryInterface
-{
-    #[DbQuery('todo_item')]
-    public function item(string $todoId): TodoEntity;
+| 種類 | 配置 | 役割 |
+|------|------|------|
+| Command | `Reason/Media/Command/` | 書き込みインターフェース |
+| Query | `Reason/Media/Query/` | 読み取りインターフェース |
+| Entity | `Reason/Entity/` | Queryの戻り値型（hydration先） |
+| SQL | `var/sql/` | SQLファイル（Phase 2で追加） |
+| Fake | `var/fake/` | FakeQueryフィクスチャ（Phase 1用） |
 
-    #[DbQuery('todo_list')]
-    /** @return array<TodoEntity> */
-    public function list(string $filterStatus = 'all'): array;
-}
-```
+Entity/はMedia/の外に置く（FakeQueryModuleがMedia/をスキャンするため）。
 
-### FakeQuery統合
+### FakeQueryフィクスチャ形式
 
-```php
-// Module/AppModule.php
-$this->install(new FakeQueryModule($fakeDir, $interfaceDir));
-```
-
-フィクスチャ:
-
-- `var/fake/todo_item.json` — 単一エンティティ（snake_case → camelCase自動変換）
-- `var/fake/todo_list.jsonl` — コレクション（1行1オブジェクト）
+- `var/fake/{query_id}.json` — 単一エンティティ
+- `var/fake/{query_id}.jsonl` — コレクション（1行1オブジェクト）
 - voidメソッド（Command）はファイル不要（no-opとして動作）
+- snake_case → camelCase は自動変換
 
 ### 開発フェーズ
 
