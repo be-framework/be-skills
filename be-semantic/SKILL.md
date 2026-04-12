@@ -51,7 +51,9 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 **ツール**: `asd` コマンド
 
 ```bash
-brew install alps-asd/asd/asd  # インストール
+brew install alps-asd/asd/asd                    # macOS
+npm install -g @alps-asd/app-state-diagram       # cross-platform
+
 asd alps/todo.xml               # バリデーション + HTML生成
 ```
 
