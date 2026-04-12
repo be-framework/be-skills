@@ -152,6 +152,7 @@ BEAR.Sundayは入口（HTTP → Input）だけを担う。
 
 - **Ray.MediaQuery**: https://github.com/ray-di/Ray.MediaQuery
 - **Ray.FakeQuery**: https://github.com/ray-di/Ray.FakeQuery （Phase 1用）
+- **Ray.WebQuery**: https://github.com/ray-di/Ray.WebQuery （外部API用）
 
 ### Beプロジェクトでの配置
 
