@@ -11,7 +11,8 @@ Objects don't DO things—they BECOME things.
 
 Be Frameworkの概念（変換公式、意味変数、存在理由層、Potential/Momentなど）は以下を参照：
 
-- **概念リファレンス**: https://be-framework.github.io/llms-full.txt
+- **Be Framework概念リファレンス**: https://be-framework.github.io/llms-full.txt
+- **Ray.Di（DI/AOP）**: https://ray-di.github.io/llms-full.txt
 - **リポジトリ**: https://github.com/be-framework/be-framework
 - **アプリ雛形**: https://github.com/be-framework/app (skeletonブランチ)
 
