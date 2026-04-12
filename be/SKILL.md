@@ -54,13 +54,14 @@ composer create-project be-framework/skeleton my-todo-app
 
 skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-demos** を読む：
 
-- https://github.com/be-framework/be-demos
+- **be-demos リポジトリ**: https://github.com/be-framework/be-demos
+- **デモ一覧（README）**: https://raw.githubusercontent.com/be-framework/be-demos/refs/heads/1.x/README.md
 
-```
-demos/
-├── hello-world/       — 最小限のlinear変容
-└── order-processing/  — Diamond Metamorphosis、Moment、Potential
-```
+READMEにレベル別・パターン別のデモ一覧がある：
+
+- **Beginner**: hello-world、contact-form、user-registration
+- **Intermediate**: order-processing（Diamond + Moment）、blog-publishing
+- **Advanced**: medical-triage（分岐3 Final）、loan-application（カスケードDiamond）、insurance-claim（収束+分岐）
 
 複雑なアプリを作る時は、該当するデモを先に読んで、そのコードを正解パターンとして踏襲する。skeletonと同じく、`use`文・FQCN・構造をそのまま参考にする。
 
