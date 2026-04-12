@@ -20,6 +20,21 @@ Be Frameworkの概念（変換公式、意味変数、存在理由層、Potentia
 
 ---
 
+## プロジェクト開始
+
+[app template](https://github.com/be-framework/app) からプロジェクトを作成する。開始時にユーザーに以下を確認：
+
+1. **プロジェクト名** — ディレクトリ名に使用（例: `my-todo-app`）
+2. **namespace** — vendor/package形式（例: `MyCompany\TodoApp`）
+
+```bash
+composer create-project be-framework/app my-todo-app
+```
+
+回答に基づいて `composer.json` の `name`、`autoload.psr-4` のnamespace、および `src/` 内の全PHPファイルのnamespaceを書き換える。
+
+---
+
 ## 哲学：解像度を上げるプロセス
 
 自然言語の仕様書は解釈が揺れる。「適切な長さ」からは100通りの実装が生まれる。
