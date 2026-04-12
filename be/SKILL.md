@@ -50,6 +50,20 @@ composer create-project be-framework/skeleton my-todo-app
 
 **llms-full.txtは概念リファレンス。skeletonは動作する正解コード。** 新しいコードを書く時は、skeletonの`use`文、FQCN、パターンをそのまま踏襲する。推測で別のnamespaceを使わない。
 
+### 複雑なパターンはbe-demosを参照
+
+skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-demos** を読む：
+
+- https://github.com/be-framework/be-demos
+
+```
+demos/
+├── hello-world/       — 最小限のlinear変容
+└── order-processing/  — Diamond Metamorphosis、Moment、Potential
+```
+
+複雑なアプリを作る時は、該当するデモを先に読んで、そのコードを正解パターンとして踏襲する。skeletonと同じく、`use`文・FQCN・構造をそのまま参考にする。
+
 ---
 
 ## 哲学：解像度を上げるプロセス
