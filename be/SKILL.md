@@ -14,7 +14,7 @@ Be Frameworkの概念（変換公式、意味変数、存在理由層、Potentia
 - **Be Framework概念リファレンス**: https://be-framework.github.io/llms-full.txt
 - **Ray.Di（DI/AOP）**: https://ray-di.github.io/llms-full.txt
 - **リポジトリ**: https://github.com/be-framework/be-framework
-- **アプリ雛形**: https://github.com/be-framework/app (skeletonブランチ)
+- **スケルトン**: https://github.com/be-framework/skeleton
 
 このスキルは「どう作るか」に集中する。「何であるか」は上記リファレンスに委ねる。
 
@@ -22,7 +22,7 @@ Be Frameworkの概念（変換公式、意味変数、存在理由層、Potentia
 
 ## プロジェクト開始
 
-[app template](https://github.com/be-framework/app) からプロジェクトを作成する。**コード生成の前に必ず**ユーザーに以下を確認すること：
+`composer create-project` でプロジェクトを作成する。**コード生成の前に必ず**ユーザーに以下を確認すること：
 
 1. **プロジェクト名** — ディレクトリ名に使用（例: `my-todo-app`）
 2. **namespace** — vendor/package形式（例: `MyCompany\TodoApp`）
@@ -30,10 +30,10 @@ Be Frameworkの概念（変換公式、意味変数、存在理由層、Potentia
 確認なしにコード生成を始めてはならない。
 
 ```bash
-composer create-project be-framework/app my-todo-app
+composer create-project be-framework/skeleton my-todo-app
 ```
 
-回答に基づいて `composer.json` の `name`、`autoload.psr-4` のnamespace、および `src/` 内の全PHPファイルのnamespaceを書き換える。
+回答に基づいて `composer.json` の `name`、`autoload.psr-4` のnamespace、および `src/` 内の全PHPファイルのnamespaceを書き換える。composer.jsonの依存関係はskeletonに含まれている。自作しない。
 
 ---
 
