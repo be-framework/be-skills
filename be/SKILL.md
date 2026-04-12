@@ -52,9 +52,14 @@ composer create-project be-framework/skeleton my-todo-app
 
 ### 複雑なパターンはbe-demosを参照
 
-skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-demos** を読む：
+skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-demos** を参照する。
 
-- **be-demos リポジトリ**: https://github.com/be-framework/be-demos
+初回利用時にcloneしておく（キャッシュ的に使う）：
+
+```bash
+[ -d /tmp/be-demos ] || git clone --depth 1 -b 1.x https://github.com/be-framework/be-demos /tmp/be-demos
+```
+
 - **デモ一覧（README）**: https://raw.githubusercontent.com/be-framework/be-demos/refs/heads/1.x/README.md
 
 READMEにレベル別・パターン別のデモ一覧がある：
