@@ -50,23 +50,28 @@ composer create-project be-framework/skeleton my-todo-app
 
 **llms-full.txtは概念リファレンス。skeletonは動作する正解コード。** 新しいコードを書く時は、skeletonの`use`文、FQCN、パターンをそのまま踏襲する。推測で別のnamespaceを使わない。
 
-### 複雑なパターンはbe-demosを参照
+### 複雑なパターンはbe-patternsを参照
 
-skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-demos** を参照する。
+skeletonは最小限のHello Worldのみ。分岐、Diamond、Moment/Potential、CQRS等の実装パターンが必要なら **be-patterns** を参照する。
 
 初回利用時にcloneしておく（キャッシュ的に使う）：
 
 ```bash
-[ -d /tmp/be-demos ] || git clone --depth 1 -b 1.x https://github.com/be-framework/be-demos /tmp/be-demos
+[ -d /tmp/be-patterns ] || git clone --depth 1 -b 1.x https://github.com/be-framework/be-patterns /tmp/be-patterns
 ```
 
-- **デモ一覧（README）**: https://raw.githubusercontent.com/be-framework/be-demos/refs/heads/1.x/README.md
+- **パターン索引（README）**: https://raw.githubusercontent.com/be-framework/be-patterns/refs/heads/1.x/README.md
 
-READMEにレベル別・パターン別のデモ一覧がある：
+READMEにユースケース別のパターン索引がある。該当するパターンのデモを参照：
 
-- **Beginner**: hello-world、contact-form、user-registration
-- **Intermediate**: order-processing（Diamond + Moment）、blog-publishing
-- **Advanced**: medical-triage（分岐3 Final）、loan-application（カスケードDiamond）、insurance-claim（収束+分岐）
+- **Minimal**: hello-world
+- **Linear**: contact-form
+- **Sequential Chain**: user-registration
+- **Diamond**: order-processing
+- **Multi-Reason Being**: blog-publishing
+- **Branching**: medical-triage
+- **Cascade Diamond**: loan-application
+- **Complex Convergence**: insurance-claim
 
 複雑なアプリを作る時は、該当するデモを先に読んで、そのコードを正解パターンとして踏襲する。skeletonと同じく、`use`文・FQCN・構造をそのまま参考にする。
 
