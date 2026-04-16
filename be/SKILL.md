@@ -256,6 +256,48 @@ final readonly class TriageAssessment
 
 Frameworkが `$being` の型を見て、対応するFinalクラスを自動選択する。
 
+#### Reason の Case クラスは「型 + データ + 振る舞い」を持って良い
+
+`EmergencyCase` のような分岐先 Reason クラスは、単なる空の判別子ではなく、
+そのケース固有のデータや振る舞いを持って構わない。Final はそれに **委譲**する。
+
+```php
+// Reason/UrgentCase.php
+final readonly class UrgentCase
+{
+    public string $triageCode;
+
+    public function __construct()
+    {
+        $this->triageCode = 'YELLOW';  // ケース固有のデータ
+    }
+
+    /** ケース固有の振る舞い。Final から委譲される */
+    public function queue(string $patientId): array
+    {
+        $position = abs(crc32($patientId)) % 5 + 1;
+        return ['queueId' => sprintf('QUE-%s-%04d', date('Ymd'), $position), ...];
+    }
+}
+
+// Final/UrgentQueued.php
+final readonly class UrgentQueued
+{
+    public function __construct(
+        #[Input] public UrgentCase $being,        // 判別子として注入
+        #[Input] public string $patientId,
+    ) {
+        $result = $being->queue($patientId);     // 振る舞いを委譲
+        // ...
+    }
+}
+```
+
+Case クラスを「ただの空マーカー」にする必要はない。**そのケースを成立させる
+ためのデータ・ロジックは Case クラスが持つのが自然**で、Final は判定後の状態を
+表現することに集中できる。判定ロジックは Being が、ケース固有のロジックは
+Case が、結果の存在は Final が持つ、という三層分業。
+
 ### Module/AppModule と実行
 
 ```php
@@ -549,13 +591,13 @@ final readonly class B {
 #### Context の SCHEMA_URL
 
 `AbstractContext::SCHEMA_URL` は、その Context イベントの構造を定義する **JSON Schema ファイルへの相対パス** を指す。
-be-semantic ワークフローで `schema/{Name}.json` を作っているなら、それを直接指す：
+be-semantic ワークフローで `design/schema/{Name}.json` を作っているなら、それを直接指す：
 
 ```php
 final class BookEnjoyedContext extends AbstractContext
 {
     public const string TYPE = 'book_enjoyed';
-    public const string SCHEMA_URL = 'schema/BookEnjoyedContext.json';
+    public const string SCHEMA_URL = 'design/schema/BookEnjoyedContext.json';
     // ...
 }
 ```
@@ -598,3 +640,43 @@ echo json_encode($final->been, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n"
 
 - **「設計方向」の不安** → 中断して相談（方向が間違ってると全部やり直し）
 - **「実装方法」の不安** → 書ききってから相談
+
+---
+
+## sub-agent に Be 実装を委譲するときの規約
+
+main セッションが sub-agent (auto モード) に Be アプリ実装を任せるとき、
+prompt に以下を明示すると無駄な action と認可プロンプトが減る。
+
+### Negative instructions（やらないことリスト）
+
+- skeleton 同梱 dir に `mkdir` しない（`src/Final/`、`src/Input/`、`src/Module/`、
+  `src/Reason/`、`src/Semantic/`、`src/Exception/`、`src/Context/`、`src/Being/`、
+  `bin/`、`tests/` は同梱されている）
+- README / CHANGELOG / LICENSE を勝手に作らない
+- task に含まれていないリファクタを副次的に行わない
+- 既存の skeleton ファイル（`HelloInput.php` 等）を消さない、必要なら namespace だけ書き換える
+- `git add -A` / `git add .` を使わない、ファイル名を明示する
+
+### SKILL_GAPS.md の必須化
+
+**sub-agent はタスクの最後に必ず `SKILL_GAPS.md` を作成して報告する。**
+
+実装中に SKILL.md が言及していない判断・落とし穴・曖昧さに遭遇したら、その場で
+`SKILL_GAPS.md` に追記する。これがないと知見が失われ、次回 sub-agent が同じ
+落とし穴に落ちる。
+
+`SKILL_GAPS.md` のフォーマット：
+
+```markdown
+## N. <短いタイトル>
+
+### 観察
+<何が起きたか、何に迷ったか>
+
+### 改善候補
+<SKILL.md / skeleton / framework のどこに何を書けば次回防げるか>
+```
+
+main セッションは sub-agent 完了後、`SKILL_GAPS.md` を必ずレビューし、
+妥当な項目を SKILL.md / skeleton にフィードバックする。これがスキル改善ループ。

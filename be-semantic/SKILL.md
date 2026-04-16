@@ -22,6 +22,25 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 各ステップは前のステップの出力を入力にする。スキップ不可。
 
+### 作業ディレクトリ
+
+このワークフローを使うときのみ、プロジェクト直下に **`design/`** を作り、その下に
+全ての成果物を置く：
+
+```
+design/
+├── story/    ストーリー（Step 1）
+├── alps/     ALPS プロファイル（Step 2）
+├── fake/     50 件フェイクデータ（Step 3）
+└── schema/   JSON Schema（Step 5）
+```
+
+`design/` は **設計の authoritative source of truth**（手で編集、git にコミット）。
+be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
+
+これらは be-skeleton には**同梱しない**。be-semantic を使わない Be アプリでは
+不要なため。be-skeleton 同梱の `src/`、`tests/`、`bin/` とは別レイヤー。
+
 ---
 
 ## Step 1：ストーリー
@@ -40,7 +59,7 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 **エンティティ列挙**: ストーリーの最後に、ドメインに存在するエンティティと属性を列挙させる。
 
-**アウトプット**: `story/main.md`
+**アウトプット**: `design/story/main.md`
 
 ---
 
@@ -54,7 +73,7 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 brew install alps-asd/asd/asd                    # macOS
 npm install -g @alps-asd/app-state-diagram       # cross-platform
 
-asd alps/todo.xml               # バリデーション + HTML生成
+asd design/alps/todo.xml         # バリデーション + HTML生成
 ```
 
 **ALPSの構造**（XML推奨 — コメントで構造を整理できる。コメントは簡潔に）:
@@ -100,7 +119,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 - `do` プレフィックス → unsafe/idempotent（書き込み）
 - `become` プレフィックス → 内部変容遷移（Be固有）
 
-**アウトプット**: `alps/[name].xml` + `alps/[name].html`（asd生成）
+**アウトプット**: `design/alps/[name].xml` + `design/alps/[name].html`（asd生成）
 
 ---
 
@@ -121,7 +140,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 出力形式: JSON配列
 ```
 
-**アウトプット**: `fake/data-50.json`
+**アウトプット**: `design/fake/data-50.json`
 
 ---
 
@@ -175,7 +194,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 }
 ```
 
-**アウトプット**: `schema/[representation].json`（表現ごとに1ファイル）
+**アウトプット**: `design/schema/[representation].json`（表現ごとに1ファイル）
 
 ---
 
