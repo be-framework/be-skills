@@ -428,6 +428,41 @@ Command/Queryの結合テストはMedia層の責任として分離する。
 - `#[Inject]` でDI（Command/Queryなど）を受け取る
 - `@link` phpdocでPotential（次のbecomingへの潜在性）を記述
 
+### Been — 存在証明
+
+Finalオブジェクトに `Been` をインジェクトすると、変容の来歴を保持する自己証明になる。
+
+```php
+final readonly class RegisteredUser
+{
+    public string $userId;
+    public Been $been;
+
+    public function __construct(
+        #[Input] string $email,
+        #[Inject] UserIdGenerator $idGen,
+        #[Inject] Been $been,
+    ) {
+        $this->userId = $idGen->generate();
+        $this->been = $been->with(new UserCreatedContext(
+            userId: $this->userId,
+            email: $email,
+        ));
+
+        // 自己証明：このユーザーはこのメールで作られた
+        assert($event->email === $this->email);
+    }
+}
+```
+
+- `Been` は `#[Inject]` で受け取る。変容元・変容先の情報がすでに含まれている
+- `with()` でプロパティに現れないコンテキスト（権限、判断理由など）を追記
+- `assert()` で因果を自己検証 — 証明がテストではなくプロダクションコードにある
+- イベントは `AbstractContext` のサブクラスとして定義する（TYPE, SCHEMA_URL, プロパティ）
+- プロパティのエコーは無意味。Beenには「なぜそうなったか」の文脈だけを記録する
+
+詳細: [意味的ログ](https://be-framework.github.io/manuals/1.0/ja/10-semantic-logging.html)
+
 ### ULIDの生成
 
 - Reason/UlidGeneratorInterface + Reason/UlidGenerator として分離（テスタビリティ）
