@@ -8,6 +8,17 @@ Agent skills for building applications with the [Be Framework](https://github.co
 - **[be-semantic](be-semantic/SKILL.md)** — Story → ALPS → Fake → Agreement → Schema → Be workflow
 - **[semantic-ex](semantic-ex/SKILL.md)** — Semantic Exercise: AI-driven data generation → constraint discovery → JSON Schema
 
+## Demo
+
+Try it in your agent:
+
+```
+Build a Todo app using the be-semantic skill.
+Todo アプリを be-semantic スキルで実装してください。
+```
+
+`be-semantic` walks the full workflow: Story → ALPS → Fake → Schema → Be implementation. Artifacts land under `design/`.
+
 ## Installation
 
 ### Claude Code Plugin
