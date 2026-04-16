@@ -10,14 +10,33 @@ Agent skills for building applications with the [Be Framework](https://github.co
 
 ## Demo
 
-Try it in your agent:
+Try this with your agent:
 
 ```
-Build a Todo app using the be-semantic skill.
-Todo アプリを be-semantic スキルで実装してください。
+Build a Be app from this story using the be-semantic skill.
+
+ユーザーとして、毎日の体重を記録したい。
+なぜなら、目標体重に近づいているか確認したいから。
 ```
 
-`be-semantic` walks the full workflow: Story → ALPS → Fake → Schema → Be implementation. Artifacts land under `design/`.
+Now change just the "なぜなら" line and run it again:
+
+```
+... なぜなら、医師に診察時に共有したいから。
+... なぜなら、三日坊主にならず習慣として続けたいから。
+```
+
+Same noun, three different apps:
+
+| なぜなら | Resulting design |
+|---|---|
+| 目標体重に近づいているか確認したい | Goal entity + 達成/未達 Branching |
+| 医師に共有したい | Date-range export + 正常範囲 Branching |
+| 三日坊主にならず続けたい | Streak counter + 継続/途切れ Branching |
+
+The "なぜなら" clause reshapes the domain — that's why `be-semantic` starts from a story, not a schema.
+
+Behind the prompt, the agent walks Story → ALPS → **Fake** → Schema → Be. The Fake step is the pivot: the agent generates 50 realistic records from your story, you skim them together, and constraints (`maxLength: 80`, optional fields, value ranges) emerge from observation — not from defaults. Those 50 records become a shared image of the domain, a common language between you and the agent. Artifacts land under `design/`.
 
 ## Installation
 
