@@ -133,6 +133,8 @@ src/
 ├── Semantic/   セマンティック変数（バリデーター）。クラス名=パラメータ名(camelCase)
 ├── Exception/  ドメイン例外。#[Message]で多言語メッセージ
 ├── Final/      終点。#[Input]でデータ受け取り、#[Inject]でDI注入
+├── Being/      中間変換（分岐がある場合のみ）。$beingプロパティで次の変身先を決定
+├── Context/    AbstractContextのサブクラス。Beenに記録するイベント定義
 ├── Reason/     「その存在を可能にするもの」すべて
 │   ├── Entity/ Queryの戻り値型（MediaQueryのhydration先）
 │   └── Media/  CQRS: Command（書き込み）/ Query（読み取り）
@@ -411,6 +413,13 @@ class TodoCompletedTest extends TestCase
 
 Command/Queryの結合テストはMedia層の責任として分離する。
 
+### 完成条件は「テスト緑 + Been 目視確認」
+
+PHPUnit が緑になっただけでは完成ではない。Beの核心は **Been の事実連鎖が人間に読めること**。
+`bin/run.php` を作って実行し、`$final->been` の JSON 出力を目視で確認する（書き方は Been セクション参照）。
+
+これを完成条件に入れないと、型は通るがログとして無意味な Context を量産してしまう。
+
 ---
 
 ## 実装ルール
@@ -461,6 +470,108 @@ final readonly class RegisteredUser
 - `assert()` で因果を自己検証 — 証明がテストではなくプロダクションコードにある
 - イベントは `AbstractContext` のサブクラスとして定義する（TYPE, SCHEMA_URL, プロパティ）
 - プロパティのエコーは無意味。Beenには「なぜそうなったか」の文脈だけを記録する
+
+#### Context に何を含めるか — Why / What の判断基準
+
+ログの目的は **未来の人が読んで「なぜこうなったか」を理解できる**こと。判断基準：
+
+| 判断 | 含める？ | 例 |
+|------|----------|-----|
+| **識別子（ID）** | ✅ 必ず | `userId`, `orderId` — どの存在の出来事か |
+| **判断の根拠** | ✅ 必ず | `rating: 5`（なぜ Enjoyed に分岐したか）、`reason: 'manual_override'` |
+| **再現に必要な値** | ✅ 必ず | `finishedAt`（時刻）、`amount`（金額確定値） |
+| **本文・長文データ** | ❌ 含めない | `noteText`、`articleBody` — Final がプロパティで持つ。Beenには ID だけ書いて参照可能にする |
+| **入力プロパティの単純コピー** | ❌ 含めない | Final の `$bookTitle` をそのまま入れる等 |
+
+迷ったら自問：「3ヶ月後にこのログを読んで、なぜこの存在になったかが分かるか？」
+
+#### assert() による自己証明のパターン
+
+`assert()` は production コードに置く**自己証明**。テストとは目的が違う（テストは外部からの確認、assert は内部の不変条件）。
+
+```php
+// パターン1: ID が正しくコピーされた
+assert($event->userId === $this->userId);
+
+// パターン2: Branching の条件に従っていることの自己証明
+assert($event->rating >= 4); // BookEnjoyed なら必ず
+
+// パターン3: 状態遷移の整合性
+assert($event->status === 'confirmed');
+
+// パターン4: 時系列の整合性
+assert($event->finishedAt >= $event->startedAt);
+```
+
+ポイント：assert は「このコードがこの存在を作る限り、必ず真であるべき」ことだけを書く。
+入力検証は Semantic でやる。assert は **存在が成立する論理的前提**の表明。
+
+#### Been の連鎖 — `#[Inject]` vs `#[Input]`
+
+`#[Inject] Been $been` は **per-injection scope** — 毎回 **空の Been** が注入される。
+A → B → C と多段で metamorphose するとき、B の `$been` には A の event は入っていない。
+
+ただし `SemanticLogger` 自体は singleton なので、**外部のログストリームには A も B も C も全部記録される**。
+in-memory の `$been` プロパティと semantic log は別物として扱う：
+
+| 用途 | 使うもの |
+|------|----------|
+| 外部ログ（観測・監査） | SemanticLogger が自動で全 step 集約 |
+| Final オブジェクトに **来歴を持たせたい** | `#[Input] Been $been` で前段からプロパティ経由で受け取る |
+
+```php
+// Step A: 空の Been を作って渡す
+final readonly class A {
+    public function __construct(
+        #[Inject] public Been $been,  // 空 Been を取得
+    ) {
+        $this->been = $been->with(new AContext(...));
+    }
+}
+
+// Step B: 前段の Been を Input で受け取って継ぐ
+final readonly class B {
+    public function __construct(
+        #[Input] Been $been,  // ← Inject ではなく Input
+    ) {
+        $this->been = $been->with(new BContext(...));
+    }
+}
+```
+
+通常の Direct / Branching パターンでは `#[Inject]` で十分（各 Final が独立した「自分の存在証明」を持つ）。
+**多段で来歴連鎖が必要な場合のみ `#[Input]` 方式に切り替える**。
+
+#### Context の SCHEMA_URL
+
+`AbstractContext::SCHEMA_URL` は、その Context イベントの構造を定義する **JSON Schema ファイルへの相対パス** を指す。
+be-semantic ワークフローで `schema/{Name}.json` を作っているなら、それを直接指す：
+
+```php
+final class BookEnjoyedContext extends AbstractContext
+{
+    public const string TYPE = 'book_enjoyed';
+    public const string SCHEMA_URL = 'schema/BookEnjoyedContext.json';
+    // ...
+}
+```
+
+スキーマがまだ無い場合のみ空文字 `''` を許容するが、Phase 1 終了までに対応する schema ファイルを置くこと。
+
+#### bin/ で目視確認する
+
+テスト green は機械的な保証にすぎない。Be の本質である **Been の事実連鎖が意味を持って読めるか** は、人間が一度見るまで分からない。`bin/run.php` を作って実行し、`$final->been` を JSON 出力して目視する：
+
+```php
+// bin/run.php
+$injector = new Injector(new AppModule());
+$becoming = $injector->getInstance(Becoming::class);
+$final = ($becoming)(new FinishReadingInput(readingId: 'r-1', rating: 5));
+
+echo json_encode($final->been, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n";
+```
+
+完成条件：「テストが緑」+「`bin/` 実行で Been が意味を持って読める」。
 
 詳細: [意味的ログ](https://be-framework.github.io/manuals/1.0/ja/10-semantic-logging.html)
 
