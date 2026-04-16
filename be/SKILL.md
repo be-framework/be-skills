@@ -444,13 +444,14 @@ final readonly class RegisteredUser
         #[Inject] Been $been,
     ) {
         $this->userId = $idGen->generate();
-        $this->been = $been->with(new UserCreatedContext(
+        $event = new UserCreatedContext(
             userId: $this->userId,
             email: $email,
-        ));
+        );
+        $this->been = $been->with($event);
 
         // 自己証明：このユーザーはこのメールで作られた
-        assert($event->email === $this->email);
+        assert($event->email === $email);
     }
 }
 ```
