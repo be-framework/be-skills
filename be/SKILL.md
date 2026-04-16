@@ -506,6 +506,10 @@ assert($event->finishedAt >= $event->startedAt);
 ポイント：assert は「このコードがこの存在を作る限り、必ず真であるべき」ことだけを書く。
 入力検証は Semantic でやる。assert は **存在が成立する論理的前提**の表明。
 
+> **注意**: PHP の production 設定（`zend.assertions=-1`）では assert は **コード生成自体されず実行されない**。
+> assert は development / staging で **論理破綻を早期に捕捉する**ためのもの。
+> 入力検証や production で必須のチェックは Semantic Validator や明示的な例外で行うこと（assert に頼らない）。
+
 #### Been の連鎖 — `#[Inject]` vs `#[Input]`
 
 `#[Inject] Been $been` は **per-injection scope** — 毎回 **空の Been** が注入される。
