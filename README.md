@@ -59,35 +59,35 @@ All skills are automatically available after installation.
 
 Point your agent at the relevant `SKILL.md` to teach it how to build Be applications.
 
-## Claude Opus 4.7 で使う
+## Using with Claude Opus 4.7
 
-Anthropic の [Best practices for using Claude Opus 4.7 with Claude Code](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code) に沿った推奨設定。
+Recommended settings follow Anthropic's [Best practices for using Claude Opus 4.7 with Claude Code](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code).
 
-### ランタイム設定
+### Runtime settings
 
-- **effort**: `xhigh` (Claude Code では 4.7 から新規デフォルト。コーディング / エージェント用途でこのスキルが最も期待通りに動く)
-- **`max_tokens`**: 64k 以上を目安に。4.7 は同じ文面でもトークン消費が +0〜35% 増えるため、compaction と完了報告の余地を残す
-- **thinking**: `adaptive` のみ。4.7 では `budget_tokens` による手動指定はエラーになる。思考量を増やしたいときは "この問題は見た目より難しい。step-by-step で慎重に考えてから答えて" のようにプロンプトで直接指示する
-- **effort は固定しない**: タスクの途中でも `/effort` で切り替えられる。schema 設計 → xhigh、typo 修正 → medium のように使い分ける
+- **effort**: `xhigh` — the new default in Claude Code for 4.7. This is where the skills work best for coding and agentic tasks.
+- **`max_tokens`**: aim for 64k or higher. 4.7 uses 0–35% more tokens for the same text than 4.6, so leave headroom for compaction and final reporting.
+- **thinking**: `adaptive` only. Manual `budget_tokens` returns an error on 4.7. If you want more thinking, steer with a prompt like *"Think carefully and step-by-step before responding; this problem is harder than it looks."*
+- **Don't pin effort**: you can toggle mid-task with `/effort`. Use `xhigh` for schema design; drop to `medium` for a typo fix.
 
-### Claude Code での流儀
+### How to work with Claude Code on 4.7
 
-4.7 はペアプログラマではなく、**コンテキストを渡して任せる有能なエンジニア**として扱うのが相性がいい。このスキルのワークフローは最初からそれを前提に設計されている:
+4.7 works best when you treat it as **a capable engineer you're delegating to**, not a pair programmer you guide line by line. The skills in this repo were designed that way from the start:
 
-- **最初のターンで front-load する** — be-semantic の Step 1 が「ストーリー + なぜなら + エンティティ列挙」を必須にしているのは、まさに intent / constraints / acceptance criteria を 1 ターン目に集約させるため。ユーザーの指示が曖昧なまま複数ターンで断片的に出されると、4.7 は token もパフォーマンスも落ちる
-- **auto モード (Y) を遠慮なく使う** — be-semantic 冒頭の `Y/n` 選択で Y を選ぶと、ALPS / Fake / Schema / Be 実装まで連続実行する。Claude Code Max では `Shift+Tab` で auto モードに入れる
-- **ユーザー介入を減らす** — 毎ターンで確認を取るより、Step 2 (ALPS HTML) と Step 3 (Fake 50 件) のようにドメインが曲がるポイントだけで合意を取る方が結果が良い
+- **Front-load the first turn.** `be-semantic` Step 1 requires "story + because + entity enumeration" precisely so intent, constraints, and acceptance criteria land in turn 1. Vague prompts drip-fed across many turns hurt both token efficiency and quality on 4.7.
+- **Use auto mode (`Y`) when you can.** The `Y/n` gate at the start of `be-semantic` runs ALPS → Fake → Schema → Be implementation end-to-end. In Claude Code Max you can also toggle auto mode with `Shift+Tab`.
+- **Minimize user interrupts.** Take agreement only at the steps where the domain can bend — Step 2 (ALPS HTML review) and Step 3 (Fake 50-item preview) — not at every turn.
 
-### なぜ 4.7 でスキルを調整したか
+### Why the skills were tuned for 4.7
 
-4.7 は 4.6 に比べて:
+Compared to 4.6, Claude Opus 4.7:
 
-- 指示をより**忠実に**解釈する (曖昧な "適切な" を字義どおり受ける)
-- サブエージェント起動を**控える** (fan-out が欲しいときは明示が必要)
-- ツール呼び出しを**控え、推論を増やす** (ツール実行が完了条件ならその旨を明示)
-- 進捗報告を**内蔵**している (「N ステップごとに要約せよ」のような足場は不要)
+- Follows instructions **more literally** (vague adjectives like "appropriate" are taken at face value).
+- **Spawns fewer subagents by default** (state the fan-out trigger if you want parallelism).
+- **Calls tools less often and reasons more** (if a tool execution is the completion gate, say so).
+- **Reports progress on its own** (scaffolding like "summarize every N steps" is unnecessary).
 
-スキル本体の vague な表現を具体化し、サブエージェント起動トリガーを明示化したのはこれに対応するため。4.6 以前でもスキルはそのまま動く。
+The edits in this PR concretize vague phrasing and make subagent triggers explicit to match these behaviors. The skills still work as-is on 4.6.
 
 ## Philosophy
 
