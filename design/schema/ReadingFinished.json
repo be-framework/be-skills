@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/book-tracker/ReadingFinished",
+  "title": "ReadingFinished",
+  "description": "ALPSプロファイルのReadingFinished状態に対応する。doFinishReading の結果。reading → done への遷移。",
+  "type": "object",
+  "required": ["bookId", "status", "finishedDate", "rating"],
+  "properties": {
+    "bookId": {
+      "type": "string",
+      "description": "本の識別子",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "status": {
+      "type": "string",
+      "description": "遷移後は常に done",
+      "const": "done"
+    },
+    "finishedDate": {
+      "type": "string",
+      "description": "読み終わった日",
+      "format": "date",
+      "$comment": "この状態では必須。YYYY-MM-DD形式（10文字固定）。"
+    },
+    "rating": {
+      "type": "integer",
+      "description": "評価（1〜5）",
+      "minimum": 1,
+      "maximum": 5,
+      "$comment": "読了時に必須。観察最小値は2だが、ドメイン定義として1を許容する。"
+    },
+    "reviewText": {
+      "type": ["string", "null"],
+      "description": "感想・メモ。任意。",
+      "minLength": 1,
+      "maxLength": 200,
+      "$comment": "観察最大44文字。実際の使用では長くなる可能性があるため200を上限とした。"
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "goBookList": { "$ref": "#/$defs/link" },
+        "goBookItem": { "$ref": "#/$defs/link" }
+      },
+      "$comment": "done 状態からは読書開始・読了への遷移は存在しない。"
+    }
+  },
+  "$defs": {
+    "link": {
+      "type": "object",
+      "required": ["href"],
+      "properties": {
+        "href": { "type": "string", "format": "uri-reference" }
+      }
+    }
+  }
+}

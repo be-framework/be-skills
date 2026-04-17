@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/book-tracker/BookItem",
+  "title": "BookItem",
+  "description": "ALPSプロファイルのBookItem状態に対応する。本の詳細と読書記録。",
+  "type": "object",
+  "required": ["bookId", "bookTitle", "authorName", "genre", "status"],
+  "properties": {
+    "bookId": {
+      "type": "string",
+      "description": "本の識別子",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "bookTitle": {
+      "type": "string",
+      "description": "本のタイトル",
+      "minLength": 1,
+      "maxLength": 60,
+      "$comment": "観察最大31文字。余裕を持って60を上限とした。"
+    },
+    "authorName": {
+      "type": "string",
+      "description": "著者名。複数著者はカンマ区切り。",
+      "minLength": 1,
+      "maxLength": 50,
+      "$comment": "観察最大25文字。余裕を持って50を上限とした。"
+    },
+    "genre": {
+      "type": "string",
+      "description": "ジャンル。自由テキスト。",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "isbn": {
+      "type": ["string", "null"],
+      "description": "ISBN-13番号（ハイフン付き）。登録時に不明な場合はnull。",
+      "pattern": "^97[89]-[0-9]-[0-9]{2}-[0-9]{6}-[0-9]$",
+      "$comment": "50件中1件がnull。フォーマットは'978-4-478-11340-9'形式（17文字）。"
+    },
+    "status": {
+      "type": "string",
+      "description": "読書状態",
+      "enum": ["unread", "reading", "done"]
+    },
+    "startDate": {
+      "type": ["string", "null"],
+      "description": "読み始めた日。status が reading または done のとき存在する。unread のときは null。",
+      "format": "date",
+      "$comment": "status=unreadのとき必ずnull（50件で確認）。"
+    },
+    "finishedDate": {
+      "type": ["string", "null"],
+      "description": "読み終わった日。status が done のときのみ存在する。unread/reading のときは null。",
+      "format": "date",
+      "$comment": "status=done以外は必ずnull（50件で確認）。"
+    },
+    "rating": {
+      "type": ["integer", "null"],
+      "description": "評価（1〜5）。status が done のときのみ存在する。",
+      "minimum": 1,
+      "maximum": 5,
+      "$comment": "観察最小値は2だが、ドメイン定義として1〜5を許容する。"
+    },
+    "reviewText": {
+      "type": ["string", "null"],
+      "description": "感想・メモ。任意。status が done のときのみ意味を持つ。",
+      "minLength": 1,
+      "maxLength": 200,
+      "$comment": "観察最大44文字。実際のユーザーはより長く書く可能性があるため200を上限とした。"
+    },
+    "_links": {
+      "type": "object",
+      "description": "利用可能な遷移。status によって存在するリンクが異なる。",
+      "properties": {
+        "goBookList": { "$ref": "#/$defs/link" },
+        "doStartReading": {
+          "$ref": "#/$defs/link",
+          "description": "status=unread のときのみ存在する。"
+        },
+        "doFinishReading": {
+          "$ref": "#/$defs/link",
+          "description": "status=reading のときのみ存在する。"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "link": {
+      "type": "object",
+      "required": ["href"],
+      "properties": {
+        "href": { "type": "string", "format": "uri-reference" }
+      }
+    }
+  }
+}

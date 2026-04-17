@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/book-tracker/ReadingStarted",
+  "title": "ReadingStarted",
+  "description": "ALPSプロファイルのReadingStarted状態に対応する。doStartReading の結果。unread → reading への遷移。",
+  "type": "object",
+  "required": ["bookId", "status", "startDate"],
+  "properties": {
+    "bookId": {
+      "type": "string",
+      "description": "本の識別子",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "status": {
+      "type": "string",
+      "description": "遷移後は常に reading",
+      "const": "reading"
+    },
+    "startDate": {
+      "type": "string",
+      "description": "読み始めた日",
+      "format": "date",
+      "$comment": "この状態では必須。YYYY-MM-DD形式（10文字固定）。"
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "goBookItem": { "$ref": "#/$defs/link" },
+        "doFinishReading": { "$ref": "#/$defs/link" }
+      }
+    }
+  },
+  "$defs": {
+    "link": {
+      "type": "object",
+      "required": ["href"],
+      "properties": {
+        "href": { "type": "string", "format": "uri-reference" }
+      }
+    }
+  }
+}

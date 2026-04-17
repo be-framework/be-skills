@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/book-tracker/BookList",
+  "title": "BookList",
+  "description": "ALPSプロファイルのBookList状態に対応する。本の一覧。",
+  "type": "object",
+  "required": ["bookId", "bookTitle", "authorName", "genre", "status"],
+  "properties": {
+    "bookId": {
+      "type": "string",
+      "description": "本の識別子",
+      "minLength": 1,
+      "maxLength": 50,
+      "$comment": "ULID想定。観察値は'book-001'形式。"
+    },
+    "bookTitle": {
+      "type": "string",
+      "description": "本のタイトル",
+      "minLength": 1,
+      "maxLength": 60,
+      "$comment": "観察最大31文字（'A Philosophy of Software Design'）。余裕を持って60を上限とした。"
+    },
+    "authorName": {
+      "type": "string",
+      "description": "著者名。複数著者はカンマ区切り。",
+      "minLength": 1,
+      "maxLength": 50,
+      "$comment": "観察最大25文字（'David Thomas, Andrew Hunt'）。余裕を持って50を上限とした。"
+    },
+    "genre": {
+      "type": "string",
+      "description": "ジャンル。自由テキスト。",
+      "minLength": 1,
+      "maxLength": 20,
+      "$comment": "観察値：小説/技術書/ビジネス/自己啓発/歴史/哲学/SF小説/ミステリー等。最長8文字（ノンフィクション）。余裕を持って20を上限とした。"
+    },
+    "status": {
+      "type": "string",
+      "description": "読書状態",
+      "enum": ["unread", "reading", "done"],
+      "$comment": "50件全てこの3値のみ観察された。"
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "goBookItem": { "$ref": "#/$defs/link" },
+        "doRegisterBook": { "$ref": "#/$defs/link" }
+      }
+    }
+  },
+  "$defs": {
+    "link": {
+      "type": "object",
+      "required": ["href"],
+      "properties": {
+        "href": { "type": "string", "format": "uri-reference" }
+      }
+    }
+  }
+}
