@@ -634,7 +634,13 @@ $final = ($becoming)(new FinishReadingInput(readingId: 'r-1', rating: 5));
 echo json_encode($final->been, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n";
 ```
 
-完成条件：「テストが緑」+「`bin/` 実行で Been が意味を持って読める」。
+**完成条件**（すべてを実行して確認したうえで完了報告する）:
+
+1. `composer install` が成功する
+2. `vendor/bin/phpunit`（または `composer test`）が **緑** になる — 「テストを書いた」だけでは不十分、**実行して通ったこと**を確認する
+3. `php bin/run.php` が走り、出力された `$final->been` が **意味を持って読める**（property の機械的なエコーになっていない）
+
+namespace やクラス名を skeleton と照合せずに推測で書いて完了報告するのは禁止。実行確認のないまま「実装完了」と報告された結果は信用できない。
 
 詳細: [意味的ログ](https://be-framework.github.io/manuals/1.0/ja/10-semantic-logging.html)
 
