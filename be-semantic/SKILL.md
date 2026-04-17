@@ -54,7 +54,7 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 
 **インタラクティブモードのチェックポイント**：
 
-- **Step 2 完了時** — `asd design/alps/[name].xml` を実行して HTML を開き、
+- **Step 2 完了時** — `asd design/alps/alps.xml` を実行して HTML を開き、
   「この ALPS で進めていいですか？」を確認
 - **Step 3 完了時** — `design/fake/data-50.json` を提示し、
   「これで進めていいですか？」を確認
@@ -90,7 +90,9 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 
 ## Step 2：ALPSプロファイル
 
-**AIの役割**: ストーリーからALPSプロファイルをXMLで作成する。APIの状態遷移と内部の変容チェーンを1つのファイルにタグで区別して記述する。
+**AIの役割**: ストーリーからALPSプロファイルを **XML** で作成する。APIの状態遷移と内部の変容チェーンを1つのファイルにタグで区別して記述する。
+
+**ファイル名は `alps.xml` 固定**。プロジェクト名や機能名を含めない（`weightlog.xml` や `todo.xml` ではなく `alps.xml`）。JSON 形式は使わない（XML はコメントで構造を整理できるため）。
 
 **ツール**: `asd` コマンド
 
@@ -98,7 +100,7 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 brew install alps-asd/asd/asd                    # macOS
 npm install -g @alps-asd/app-state-diagram       # cross-platform
 
-asd design/alps/todo.xml         # バリデーション + HTML生成
+asd design/alps/alps.xml         # バリデーション + HTML生成
 ```
 
 **ALPSの構造**（XML推奨 — コメントで構造を整理できる。コメントは簡潔に）:
@@ -144,7 +146,22 @@ asd design/alps/todo.xml         # バリデーション + HTML生成
 - `do` プレフィックス → unsafe/idempotent（書き込み）
 - `become` プレフィックス → 内部変容遷移（Be固有）
 
-**アウトプット**: `design/alps/[name].xml` + `design/alps/[name].html`（asd生成）
+**アウトプット**: `design/alps/alps.xml` + `design/alps/alps.html`（asd生成）
+
+**インタラクティブモードの確認**（Y モードでは省略）:
+
+`asd` で HTML を生成・自動で開いた上で、ユーザーに **必ず確認を取る**。勝手に Step 3 へ進まない。
+
+```
+ALPS を生成しました（design/alps/alps.html を開いています）。
+
+確認ポイント:
+- API 遷移（tag="api"）はストーリーをカバーしていますか？
+- 内部変容（tag="be" / become〜）の分岐は意図どおりですか？
+- ディスクリプタ（属性）の漏れ・命名の違和感はありませんか？
+
+このまま Step 3（Fake 50 件生成）へ進めていいですか？
+```
 
 ---
 
@@ -166,6 +183,24 @@ asd design/alps/todo.xml         # バリデーション + HTML生成
 ```
 
 **アウトプット**: `design/fake/data-50.json`
+
+**インタラクティブモードの確認**（Y モードでは省略）:
+
+50 件を生成したら `design/fake/data-50.json` を提示し、ユーザーに **必ず確認を取る**。勝手に Step 4 へ進まない。
+
+```
+50 件のフェイクデータを生成しました（design/fake/data-50.json）。
+最初の 3 件をプレビューします:
+
+[抜粋を 3 件表示]
+
+確認ポイント:
+- 「実際のユーザーが日常的に作るデータ」になっていますか？
+- 「Test 1」「Sample A」のような無味なデータが混じっていませんか？
+- カバーすべきエッジケース（境界値・null パターン）は含まれていますか？
+
+このまま Step 4（観察と制約合意）へ進めていいですか？
+```
 
 ---
 
