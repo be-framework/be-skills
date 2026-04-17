@@ -109,7 +109,7 @@ AIの特性がこのプロセスを可能にしている：
 
 人間の役割は最後の **判断（承認）** だけ。
 
-詳細は `skills/semantic-ex/SKILL.md` を参照。
+詳細は `semantic-ex/SKILL.md`（同プラグイン同階層）を参照。
 
 ---
 
@@ -318,18 +318,25 @@ Case が、結果の存在は Final が持つ、という三層分業。
 ### Module/AppModule と実行
 
 ```php
-// Module/AppModule.php — 基本パターン（Reasonクラスをバインド）
+// Module/AppModule.php — 基本パターン
+use Be\Framework\Module\BeModule;
 use Ray\Di\AbstractModule;
 
 final class AppModule extends AbstractModule
 {
     protected function configure(): void
     {
-        $this->bind(Greeting::class);  // 具象クラスのバインド
-        $this->bind(PaymentGatewayInterface::class)->to(PaymentGateway::class);  // インターフェースバインド
+        // Semantic 変数の名前空間を BeModule で install する（必須）
+        $this->install(new BeModule('MyVendor\\MyApp\\Semantic'));
+
+        // Reason クラスや Interface バインドは必要に応じて追加する
+        $this->bind(Greeting::class);
+        $this->bind(PaymentGatewayInterface::class)->to(PaymentGateway::class);
     }
 }
 ```
+
+**重要**: `BeModule` の install は Be アプリで必須。Semantic 変数の自動マッチング（Input のパラメータ名 → Semantic クラス）はこれがないと機能しない。
 
 CQRS使用時は `FakeQueryModule` を install する（後述の「CQRS」セクション参照）。
 
@@ -477,12 +484,21 @@ class TodoCompletedTest extends TestCase
 
 Command/Queryの結合テストはMedia層の責任として分離する。
 
-### 完成条件は「テスト緑 + Been 目視確認」
+### 完成条件
 
-PHPUnit が緑になっただけでは完成ではない。Beの核心は **Been の事実連鎖が人間に読めること**。
-`bin/run.php` を作って実行し、`$final->been` の JSON 出力を目視で確認する（書き方は Been セクション参照）。
+1. `composer install` が成功する
+2. `vendor/bin/phpunit`（または `composer test`）が **緑**になる — 「テストを書いた」だけでは不十分、**実行して通ったこと**を確認する
 
-これを完成条件に入れないと、型は通るがログとして無意味な Context を量産してしまう。
+上記 2 つは **実際にコマンドを実行して確認する**。推論で「通るはず」と代替しない。
+
+**スモーク確認（推奨、必須ではない）**:
+
+テスト緑は機械的な保証にすぎない。アプリの挙動を人間の目で一度見ると、テストでは気付けない意味の崩れ（`$final->been` の Context 連鎖がログとして無意味、Final のプロパティが想定と違う等）が検出できる。
+
+- 単純なアプリ: `bin/smoke.php` 1 本に代表シナリオ 1 つ
+- 多段・多分岐アプリ: `smoke/` ディレクトリにシナリオごとのファイル（関数化しておけばテストからも呼べる）
+
+Been を持つアプリは `$final->been` を JSON 出力して**事実連鎖が意味を持って読めるか**を目視するのが有効。Been を持たない単純な Be アプリ（hello 的）では、Final のプロパティを確認すれば足りる。
 
 ---
 
@@ -615,26 +631,25 @@ final readonly class B {
 
 #### Context の SCHEMA_URL
 
-`AbstractContext::SCHEMA_URL` は、その Context イベントの構造を定義する **JSON Schema ファイルへの相対パス** を指す。
-be-semantic ワークフローで `design/schema/{Name}.json` を作っているなら、それを直接指す：
+`AbstractContext::SCHEMA_URL` は、その Context イベントの構造を定義する **JSON Schema の公開 URL**（絶対 URL）を指す。Context は production で事実ログとして流通するため、スキーマは安定した URL でホストされている前提（GitHub Pages、S3、社内の静的ホスティング等）。
 
 ```php
 final class BookEnjoyedContext extends AbstractContext
 {
     public const string TYPE = 'book_enjoyed';
-    public const string SCHEMA_URL = 'design/schema/BookEnjoyedContext.json';
+    public const string SCHEMA_URL = 'https://example.com/schemas/book/book-enjoyed.json';
     // ...
 }
 ```
 
-スキーマがまだ無い場合のみ空文字 `''` を許容するが、Phase 1 終了までに対応する schema ファイルを置くこと。
+be-semantic ワークフローで `design/schema/{Name}.json` を作ったなら、それを公開 URL に配置して（GitHub Pages 等）、その URL を `SCHEMA_URL` に書く。スキーマがまだ公開されていない場合のみ空文字 `''` を許容するが、公開前提を忘れない。
 
-#### bin/ で目視確認する
+#### bin/smoke.php で目視確認する（Been を持つアプリの場合）
 
-テスト green は機械的な保証にすぎない。Be の本質である **Been の事実連鎖が意味を持って読めるか** は、人間が一度見るまで分からない。`bin/run.php` を作って実行し、`$final->been` を JSON 出力して目視する：
+Been を使うアプリでは、テスト緑だけでは **事実連鎖が意味を持って読めるか** が分からない。`bin/smoke.php` を作って代表シナリオを 1 つ実行し、`$final->been` を JSON 出力して目視する：
 
 ```php
-// bin/run.php
+// bin/smoke.php
 $injector = new Injector(new AppModule());
 $becoming = $injector->getInstance(Becoming::class);
 $final = ($becoming)(new FinishReadingInput(readingId: 'r-1', rating: 5));
@@ -642,13 +657,14 @@ $final = ($becoming)(new FinishReadingInput(readingId: 'r-1', rating: 5));
 echo json_encode($final->been, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n";
 ```
 
-**完成条件**（すべてを実行して確認したうえで完了報告する）:
+**Input が多いアプリ**では `bin/smoke.php` 1 本では収まらない。`smoke/` ディレクトリに複数のシナリオスクリプトを分割するのが良い（シナリオを関数化しておけばテストからも呼べる）:
 
-1. `composer install` が成功する
-2. `vendor/bin/phpunit`（または `composer test`）が **緑** になる — 「テストを書いた」だけでは不十分、**実行して通ったこと**を確認する
-3. `php bin/run.php` が走り、出力された `$final->been` が **意味を持って読める**（property の機械的なエコーになっていない）
-
-上記 3 つはすべて **実際にコマンドを実行して確認する**。推論で「通るはず」「こう出るはず」と代替しない。コードを読んで挙動を頭で追うのは便利だが、このスキルの完了ゲートとしては認めない。
+```
+smoke/
+├── create_user.php
+├── publish_article.php
+└── reject_and_resubmit.php
+```
 
 namespace やクラス名を skeleton と照合せずに推測で書いて完了報告するのは禁止。実行確認のないまま「実装完了」と報告された結果は信用できない。
 
@@ -677,12 +693,12 @@ Been を活用するコツ:
 
 - 分岐先 Final が予想外なら、**Being の Context で判断根拠（temperature, score, threshold）を記録**しておく
 - 「property を Context にエコーするだけ」を避け、**判断・選択・理由** を残す（Why / What の判断基準は前述の表を参照）
-- `bin/run.php` で複数の Input パターンを試して `$been` を読み比べると、ドメイン全体の動きが見える
+- `bin/smoke.php` や `smoke/*.php` で複数の Input パターンを試して `$been` を読み比べると、ドメイン全体の動きが見える
 
 **変換チェーン自体をステップ実行したいとき** — `xstep` で `Becoming` の中をブレークポイントで追える:
 
 ```bash
-xstep --break="vendor/be-framework/be/src/Becoming.php:53" --steps=10 -- php bin/run.php
+xstep --break="vendor/be-framework/be/src/Becoming.php:53" --steps=10 -- php bin/smoke.php
 ```
 
 Being から次の Final が選ばれる瞬間や、`#[Input]` パラメータが何で埋まるかが見える。
