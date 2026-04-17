@@ -59,6 +59,36 @@ All skills are automatically available after installation.
 
 Point your agent at the relevant `SKILL.md` to teach it how to build Be applications.
 
+## Using with Claude Opus 4.7
+
+Recommended settings follow Anthropic's [Best practices for using Claude Opus 4.7 with Claude Code](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code).
+
+### Runtime settings
+
+- **effort**: `xhigh` — the new default in Claude Code for 4.7. This is where the skills work best for coding and agentic tasks.
+- **`max_tokens`**: aim for 64k or higher. 4.7 uses 0–35% more tokens for the same text than 4.6, so leave headroom for compaction and final reporting.
+- **thinking**: `adaptive` only. Manual `budget_tokens` returns an error on 4.7. If you want more thinking, steer with a prompt like *"Think carefully and step-by-step before responding; this problem is harder than it looks."*
+- **Don't pin effort**: you can toggle mid-task with `/effort`. Use `xhigh` for schema design; drop to `medium` for a typo fix.
+
+### How to work with Claude Code on 4.7
+
+4.7 works best when you treat it as **a capable engineer you're delegating to**, not a pair programmer you guide line by line. The skills in this repo were designed that way from the start:
+
+- **Front-load the first turn.** `be-semantic` Step 1 requires "story + because + entity enumeration" precisely so intent, constraints, and acceptance criteria land in turn 1. Vague prompts drip-fed across many turns hurt both token efficiency and quality on 4.7.
+- **Use auto mode (`Y`) when you can.** The `Y/n` gate at the start of `be-semantic` runs ALPS → Fake → Schema → Be implementation end-to-end. In Claude Code Max you can also toggle auto mode with `Shift+Tab`.
+- **Minimize user interrupts.** Take agreement only at the steps where the domain can bend — Step 2 (ALPS HTML review) and Step 3 (Fake 50-item preview) — not at every turn.
+
+### Why the skills were tuned for 4.7
+
+Compared to 4.6, Claude Opus 4.7:
+
+- Follows instructions **more literally** (vague adjectives like "appropriate" are taken at face value).
+- **Spawns fewer subagents by default** (state the fan-out trigger if you want parallelism).
+- **Calls tools less often and reasons more** (if a tool execution is the completion gate, say so).
+- **Reports progress on its own** (scaffolding like "summarize every N steps" is unnecessary).
+
+The edits in this PR concretize vague phrasing and make subagent triggers explicit to match these behaviors. The skills still work as-is on 4.6.
+
 ## Philosophy
 
 Be's development flow is a process of **raising resolution for AI-driven development**:
