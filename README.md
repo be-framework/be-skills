@@ -59,6 +59,17 @@ All skills are automatically available after installation.
 
 Point your agent at the relevant `SKILL.md` to teach it how to build Be applications.
 
+## Claude Opus 4.7 で使う
+
+これらのスキルはモデル非依存で書かれているが、Claude Opus 4.7 に合わせた推奨設定がある:
+
+- **effort**: `xhigh` を推奨（コーディング / エージェント用途のデフォルト。4.7 はこのレベルで tool 使用とサブエージェント起動が期待通りに出る）
+- **`max_tokens`**: 64k 以上を目安に。4.7 は同じ文面でもトークン消費が +0〜35% 増えるため、compaction と完了報告の余地を残す
+- **thinking**: `adaptive` のみ。4.7 では `budget_tokens` による手動指定はエラーになる
+- **Claude Code**: `/model` で `claude-opus-4-7` に切り替え、`/effort xhigh` を設定する
+
+4.6 以前でもスキルはそのまま動く。上の設定は 4.7 の振る舞い（より忠実な指示追従、サブエージェント起動の抑制、進捗報告の内蔵化）に対して最大効果を出すためのもの。
+
 ## Philosophy
 
 Be's development flow is a process of **raising resolution for AI-driven development**:
