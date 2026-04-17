@@ -61,14 +61,33 @@ Point your agent at the relevant `SKILL.md` to teach it how to build Be applicat
 
 ## Claude Opus 4.7 で使う
 
-これらのスキルはモデル非依存で書かれているが、Claude Opus 4.7 に合わせた推奨設定がある:
+Anthropic の [Best practices for using Claude Opus 4.7 with Claude Code](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code) に沿った推奨設定。
 
-- **effort**: `xhigh` を推奨（コーディング / エージェント用途のデフォルト。4.7 はこのレベルで tool 使用とサブエージェント起動が期待通りに出る）
+### ランタイム設定
+
+- **effort**: `xhigh` (Claude Code では 4.7 から新規デフォルト。コーディング / エージェント用途でこのスキルが最も期待通りに動く)
 - **`max_tokens`**: 64k 以上を目安に。4.7 は同じ文面でもトークン消費が +0〜35% 増えるため、compaction と完了報告の余地を残す
-- **thinking**: `adaptive` のみ。4.7 では `budget_tokens` による手動指定はエラーになる
-- **Claude Code**: `/model` で `claude-opus-4-7` に切り替え、`/effort xhigh` を設定する
+- **thinking**: `adaptive` のみ。4.7 では `budget_tokens` による手動指定はエラーになる。思考量を増やしたいときは "この問題は見た目より難しい。step-by-step で慎重に考えてから答えて" のようにプロンプトで直接指示する
+- **effort は固定しない**: タスクの途中でも `/effort` で切り替えられる。schema 設計 → xhigh、typo 修正 → medium のように使い分ける
 
-4.6 以前でもスキルはそのまま動く。上の設定は 4.7 の振る舞い（より忠実な指示追従、サブエージェント起動の抑制、進捗報告の内蔵化）に対して最大効果を出すためのもの。
+### Claude Code での流儀
+
+4.7 はペアプログラマではなく、**コンテキストを渡して任せる有能なエンジニア**として扱うのが相性がいい。このスキルのワークフローは最初からそれを前提に設計されている:
+
+- **最初のターンで front-load する** — be-semantic の Step 1 が「ストーリー + なぜなら + エンティティ列挙」を必須にしているのは、まさに intent / constraints / acceptance criteria を 1 ターン目に集約させるため。ユーザーの指示が曖昧なまま複数ターンで断片的に出されると、4.7 は token もパフォーマンスも落ちる
+- **auto モード (Y) を遠慮なく使う** — be-semantic 冒頭の `Y/n` 選択で Y を選ぶと、ALPS / Fake / Schema / Be 実装まで連続実行する。Claude Code Max では `Shift+Tab` で auto モードに入れる
+- **ユーザー介入を減らす** — 毎ターンで確認を取るより、Step 2 (ALPS HTML) と Step 3 (Fake 50 件) のようにドメインが曲がるポイントだけで合意を取る方が結果が良い
+
+### なぜ 4.7 でスキルを調整したか
+
+4.7 は 4.6 に比べて:
+
+- 指示をより**忠実に**解釈する (曖昧な "適切な" を字義どおり受ける)
+- サブエージェント起動を**控える** (fan-out が欲しいときは明示が必要)
+- ツール呼び出しを**控え、推論を増やす** (ツール実行が完了条件ならその旨を明示)
+- 進捗報告を**内蔵**している (「N ステップごとに要約せよ」のような足場は不要)
+
+スキル本体の vague な表現を具体化し、サブエージェント起動トリガーを明示化したのはこれに対応するため。4.6 以前でもスキルはそのまま動く。
 
 ## Philosophy
 
