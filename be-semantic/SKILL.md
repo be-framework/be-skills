@@ -319,7 +319,7 @@ ALPS を生成しました（design/alps/alps.html を開いています）。
 }
 ```
 
-**アウトプット**: `design/schema/[representation].json`（表現ごとに1ファイル）
+**アウトプット**: `design/schema/[Taxonomy].json`（ALPS の `type="semantic"` タクソノミーごとに1ファイル、PascalCase 推奨。例: `TodoList.json`、`WeightRecord.json`）
 
 ---
 
