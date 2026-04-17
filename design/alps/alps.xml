@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alps version="1.0">
+
+  <!-- ===================== Ontology ===================== -->
+  <!-- Book fields -->
+  <descriptor id="bookId" title="本のID" def="https://schema.org/identifier" />
+  <descriptor id="bookTitle" title="本のタイトル" def="https://schema.org/name" />
+  <descriptor id="authorName" title="著者名" def="https://schema.org/author" />
+  <descriptor id="genre" title="ジャンル" def="https://schema.org/genre" />
+  <descriptor id="isbn" title="ISBN番号" def="https://schema.org/isbn" />
+
+  <!-- ReadingRecord fields -->
+  <descriptor id="recordId" title="記録のID" def="https://schema.org/identifier" />
+  <descriptor id="status" title="読書状態（unread/reading/done）" />
+  <descriptor id="startDate" title="読み始めた日" def="https://schema.org/startDate" />
+  <descriptor id="finishedDate" title="読み終わった日" def="https://schema.org/endDate" />
+  <descriptor id="rating" title="評価（1〜5）" def="https://schema.org/ratingValue" />
+  <descriptor id="reviewText" title="感想・メモ" def="https://schema.org/reviewBody" />
+
+  <!-- ===================== Taxonomy ===================== -->
+  <descriptor id="BookList" type="semantic" title="本の一覧">
+    <descriptor href="#bookId" />
+    <descriptor href="#bookTitle" />
+    <descriptor href="#authorName" />
+    <descriptor href="#genre" />
+    <descriptor href="#status" />
+  </descriptor>
+
+  <descriptor id="BookItem" type="semantic" title="本の詳細">
+    <descriptor href="#bookId" />
+    <descriptor href="#bookTitle" />
+    <descriptor href="#authorName" />
+    <descriptor href="#genre" />
+    <descriptor href="#isbn" />
+    <descriptor href="#status" />
+    <descriptor href="#startDate" />
+    <descriptor href="#finishedDate" />
+    <descriptor href="#rating" />
+    <descriptor href="#reviewText" />
+  </descriptor>
+
+  <descriptor id="BookCreated" type="semantic" title="本を登録した状態">
+    <descriptor href="#bookId" />
+    <descriptor href="#bookTitle" />
+    <descriptor href="#authorName" />
+    <descriptor href="#genre" />
+    <descriptor href="#isbn" />
+    <descriptor href="#status" />
+  </descriptor>
+
+  <descriptor id="ReadingStarted" type="semantic" title="読書を開始した状態">
+    <descriptor href="#bookId" />
+    <descriptor href="#status" />
+    <descriptor href="#startDate" />
+  </descriptor>
+
+  <descriptor id="ReadingFinished" type="semantic" title="読了した状態">
+    <descriptor href="#bookId" />
+    <descriptor href="#status" />
+    <descriptor href="#finishedDate" />
+    <descriptor href="#rating" />
+    <descriptor href="#reviewText" />
+  </descriptor>
+
+  <!-- ===================== Choreography: API ===================== -->
+  <descriptor id="goBookList" type="safe" rt="#BookList" tag="api">
+    <doc>本の一覧を取得する</doc>
+  </descriptor>
+
+  <descriptor id="goBookItem" type="safe" rt="#BookItem" tag="api">
+    <doc>本の詳細と読書記録を取得する</doc>
+    <descriptor href="#bookId" />
+  </descriptor>
+
+  <descriptor id="doRegisterBook" type="unsafe" rt="#BookCreated" tag="api">
+    <doc>新しい本を登録する（初期状態: unread）</doc>
+    <descriptor href="#bookTitle" />
+    <descriptor href="#authorName" />
+    <descriptor href="#genre" />
+    <descriptor href="#isbn" />
+  </descriptor>
+
+  <descriptor id="doStartReading" type="idempotent" rt="#ReadingStarted" tag="api">
+    <doc>読書を開始する（unread → reading）</doc>
+    <descriptor href="#bookId" />
+    <descriptor href="#startDate" />
+  </descriptor>
+
+  <descriptor id="doFinishReading" type="idempotent" rt="#ReadingFinished" tag="api">
+    <doc>読了を記録する（reading → done）</doc>
+    <descriptor href="#bookId" />
+    <descriptor href="#finishedDate" />
+    <descriptor href="#rating" />
+    <descriptor href="#reviewText" />
+  </descriptor>
+
+  <!-- ===================== Choreography: Be（内部変容） ===================== -->
+  <descriptor id="BookRegistration" type="semantic" tag="be">
+    <doc>本登録の中間状態：タイトル・著者名・ジャンルのバリデーション</doc>
+    <descriptor href="#bookTitle" />
+    <descriptor href="#authorName" />
+    <descriptor href="#genre" />
+  </descriptor>
+  <descriptor id="becomeRegistered" type="unsafe" rt="#BookRegistration" tag="be" />
+
+  <descriptor id="ReadingTransition" type="semantic" tag="be">
+    <doc>読書状態遷移の中間状態：状態の妥当性チェック（unread→readingのみ許可）</doc>
+    <descriptor href="#bookId" />
+    <descriptor href="#status" />
+  </descriptor>
+  <descriptor id="becomeReadingTransition" type="unsafe" rt="#ReadingTransition" tag="be" />
+
+  <descriptor id="ReviewValidation" type="semantic" tag="be">
+    <doc>読了記録の中間状態：評価値（1-5）と日付の妥当性チェック</doc>
+    <descriptor href="#rating" />
+    <descriptor href="#finishedDate" />
+  </descriptor>
+  <descriptor id="becomeReviewValidation" type="unsafe" rt="#ReviewValidation" tag="be" />
+
+</alps>
