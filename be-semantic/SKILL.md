@@ -45,8 +45,10 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 
 ## 開始時の確認（必須・最初のアクション）
 
-**このスキルが起動したら、Step 1 に進む前に必ずこの質問を投げる。例外なし。**
-ユーザーが「自走で」「お任せで」「auto モードで」等を明示していてもいなくても、まずこの質問を出す:
+**このスキルが起動したら、Step 1 に進む前にモードを確定する。**
+
+ユーザーがすでに「インタラクティブモードで」「自走で」等を明示している場合はその指示に従う。
+明示がない場合のみ、以下の質問を投げてから待つ：
 
 ```
 ストーリーから最後まで自走しますか？（Y/n）
@@ -55,10 +57,7 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 - n = インタラクティブモード → ALPS / Fake の節目でファイルを開いて合意を取る
 ```
 
-ユーザーの返答（Y / n / それに準ずる回答）を**待ってから** Step 1 に進む。
-返答なしに先に進むのは禁止。
-
-**なぜ必ず質問するか**: 意味例外（Semantic Exception）や Semantic 変数は後から変更できるが、
+**なぜモードを確定するか**: 意味例外（Semantic Exception）や Semantic 変数は後から変更できるが、
 **ALPS と Fake は合意なしに進むと「思ったものと違うアプリ」になる**。
 モード選択をユーザーに渡すこと自体が、ドメインに対する責任を人間に残す行為。
 
@@ -91,6 +90,7 @@ be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
 **エンティティ列挙**: ストーリーの最後に、ドメインに存在するエンティティと属性を列挙させる。
 
 **アウトプット**: `design/story/main.md`
+**git**: `git add design/story/ && git commit -m "Add user story"`
 
 ---
 
@@ -153,13 +153,29 @@ asd design/alps/alps.xml         # バリデーション + HTML生成
 - `become` プレフィックス → 内部変容遷移（Be固有）
 
 **アウトプット**: `design/alps/alps.xml` + `design/alps/alps.html`（asd生成）
+**git**: `git add design/alps/ && git commit -m "Add ALPS profile"`
+
+**`asd` の実行**:
+
+GUI 環境（ローカル Mac / Windows）では HTML を自動で開く：
+```bash
+asd design/alps/alps.xml
+```
+
+ヘッドレス環境（リモートサーバー、CI、Web IDE）では HTML は開けない。
+その場合は `asd` でバリデーションと HTML 生成だけ行い、ALPS の構造をテキストで要約して確認を取る：
+
+```bash
+asd design/alps/alps.xml   # バリデーション + HTML 生成（ブラウザは不要）
+```
 
 **インタラクティブモードの確認**（Y モードでは省略）:
 
-`asd` で HTML を生成・自動で開いた上で、ユーザーに **必ず確認を取る**。勝手に Step 3 へ進まない。
+`asd` 実行後、ユーザーに **必ず確認を取る**。勝手に Step 3 へ進まない。
+GUI 環境なら「HTML を開いています」、ヘッドレス環境なら ALPS の遷移一覧をテキストで提示する。
 
 ```
-ALPS を生成しました（design/alps/alps.html を開いています）。
+ALPS を生成しました。
 
 確認ポイント:
 - API 遷移（tag="api"）はストーリーをカバーしていますか？
@@ -191,6 +207,7 @@ ALPS を生成しました（design/alps/alps.html を開いています）。
 ```
 
 **アウトプット**: `design/fake/data-50.json`
+**git**: `git add design/fake/ && git commit -m "Add fake data (50 records)"`
 
 **インタラクティブモードの確認**（Y モードでは省略）:
 
@@ -274,6 +291,7 @@ ALPS を生成しました（design/alps/alps.html を開いています）。
 ```
 
 **アウトプット**: `design/schema/[representation].json`（表現ごとに1ファイル）
+**git**: `git add design/schema/ && git commit -m "Add JSON Schema"`
 
 ---
 
