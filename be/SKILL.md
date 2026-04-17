@@ -272,23 +272,40 @@ final readonly class UrgentCase
         $this->triageCode = 'YELLOW';  // ケース固有のデータ
     }
 
-    /** ケース固有の振る舞い。Final から委譲される */
+    /**
+     * ケース固有の振る舞い。Final から委譲される。
+     *
+     * @return array{queueId: string, queuePosition: int, status: string}
+     */
     public function queue(string $patientId): array
     {
         $position = abs(crc32($patientId)) % 5 + 1;
-        return ['queueId' => sprintf('QUE-%s-%04d', date('Ymd'), $position), ...];
+
+        return [
+            'queueId' => sprintf('QUE-%s-%04d', date('Ymd'), $position),
+            'queuePosition' => $position,
+            'status' => 'queued',
+        ];
     }
 }
 
 // Final/UrgentQueued.php
 final readonly class UrgentQueued
 {
+    public string $queueId;
+    public int $queuePosition;
+    public string $status;
+    public string $triageCode;
+
     public function __construct(
         #[Input] public UrgentCase $being,        // 判別子として注入
         #[Input] public string $patientId,
     ) {
         $result = $being->queue($patientId);     // 振る舞いを委譲
-        // ...
+        $this->queueId = $result['queueId'];
+        $this->queuePosition = $result['queuePosition'];
+        $this->status = $result['status'];
+        $this->triageCode = $being->triageCode;
     }
 }
 ```
