@@ -22,6 +22,50 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 各ステップは前のステップの出力を入力にする。スキップ不可。
 
+### 作業ディレクトリ
+
+このワークフローを使うときのみ、プロジェクト直下に **`design/`** を作り、その下に
+全ての成果物を置く：
+
+```
+design/
+├── story/    ストーリー（Step 1）
+├── alps/     ALPS プロファイル（Step 2）
+├── fake/     50 件フェイクデータ（Step 3）
+└── schema/   JSON Schema（Step 5）
+```
+
+`design/` は **設計の authoritative source of truth**（手で編集、git にコミット）。
+be-skeleton の `var/`（runtime tmp / cache）とは別レイヤー。
+
+これらは be-skeleton には**同梱しない**。be-semantic を使わない Be アプリでは
+不要なため。be-skeleton 同梱の `src/`、`tests/`、`bin/` とは別レイヤー。
+
+---
+
+## 開始時の確認（必須）
+
+ワークフローを始める最初のメッセージで、必ず確認する：
+
+> ストーリーから最後まで自走しますか？（Y/n）
+>
+> - **Y = 自走モード**（既定）→ 全ステップを連続実行し、完了後に `design/` の成果物を一覧提示
+> - **n = インタラクティブモード** → ALPS / Fake の節目でファイルを開いて合意を取る
+
+**インタラクティブモードのチェックポイント**：
+
+- **Step 2 完了時** — `asd design/alps/[name].xml` を実行して HTML を開き、
+  「この ALPS で進めていいですか？」を確認
+- **Step 3 完了時** — `design/fake/data-50.json` を提示し、
+  「これで進めていいですか？」を確認
+
+意味例外（Semantic Exception）や Semantic 変数は後から変更できるが、
+**ALPS と Fake は合意なしに進むと「思ったものと違うアプリ」になる** — だからここで止める。
+
+明示の指示がなければ自走モード。
+ただし自走モードでも Step 1（ストーリー）の「なぜなら」だけは省略不可
+（これがなければドメインが定まらない）。
+
 ---
 
 ## Step 1：ストーリー
@@ -40,7 +84,7 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 **エンティティ列挙**: ストーリーの最後に、ドメインに存在するエンティティと属性を列挙させる。
 
-**アウトプット**: `story/main.md`
+**アウトプット**: `design/story/main.md`
 
 ---
 
@@ -54,7 +98,7 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 brew install alps-asd/asd/asd                    # macOS
 npm install -g @alps-asd/app-state-diagram       # cross-platform
 
-asd alps/todo.xml               # バリデーション + HTML生成
+asd design/alps/todo.xml         # バリデーション + HTML生成
 ```
 
 **ALPSの構造**（XML推奨 — コメントで構造を整理できる。コメントは簡潔に）:
@@ -100,7 +144,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 - `do` プレフィックス → unsafe/idempotent（書き込み）
 - `become` プレフィックス → 内部変容遷移（Be固有）
 
-**アウトプット**: `alps/[name].xml` + `alps/[name].html`（asd生成）
+**アウトプット**: `design/alps/[name].xml` + `design/alps/[name].html`（asd生成）
 
 ---
 
@@ -121,7 +165,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 出力形式: JSON配列
 ```
 
-**アウトプット**: `fake/data-50.json`
+**アウトプット**: `design/fake/data-50.json`
 
 ---
 
@@ -175,7 +219,7 @@ asd alps/todo.xml               # バリデーション + HTML生成
 }
 ```
 
-**アウトプット**: `schema/[representation].json`（表現ごとに1ファイル）
+**アウトプット**: `design/schema/[representation].json`（表現ごとに1ファイル）
 
 ---
 
@@ -211,7 +255,7 @@ Be実装の詳細は `be/SKILL.md` を参照。
 2. **「なぜなら」節を省略させない** — ユーザーが省略したら「なぜそうしたいですか？」と聞く
 3. **フェイクデータは現実的に** — 「Test Todo 1」「Sample Item 2」のようなデータは却下、作り直す
 4. **制約は観察から** — ユーザーが「maxLength 255で」と言っても、「観察すると最大40文字なのでは？」と確認する
-5. **各ステップで合意を取る** — 次のステップに進む前に「このALPSで進めていいですか？」と確認
+5. **インタラクティブモードでは ALPS / Fake で必ず合意を取る** — 詳細は冒頭「開始時の確認」を参照。自走モードでは最後にまとめて提示
 
 ---
 
