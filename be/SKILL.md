@@ -360,14 +360,25 @@ $final = ($becoming)(new HelloInput(name: 'World'));
 
 ### 開発ループ：composer dev / stree
 
-skeletonには2つのエントリポイントがある。どちらも同じ出力（greeting等）を返す。違いはログだけ。
+skeleton のエントリは `bin/app.php` 一本。CLI 引数を BEAR.Sunday 風の URI として解釈する: `<input>?<key>=<value>&...`。Module は `MODULE` env var で選ぶ（既定 `dev`）。`MODULE=foo` → `Be\Skeleton\Module\FooModule`。
 
-| コマンド | Module | 用途 |
-|----------|--------|------|
-| `php bin/app.php` | `AppModule` | 最小配線の本番形。ログなし |
-| `composer dev` | `DevModule` | パイプライン実行 + `var/log/<timestamp>.json` に意味的ログを書く |
-| `composer stree` | - | `@dev` 実行後、最新のログをツリーで描画 |
-| `composer stree:full` | - | 同上、verbose |
+| コマンド | 等価呼び出し | 用途 |
+|----------|--------------|------|
+| `composer dev` | `MODULE=dev php bin/app.php 'hello?name=World'` | 既定モード。`var/log/<timestamp>.json` を書きつつ greeting を出す |
+| `composer app` | `MODULE=app php bin/app.php 'hello?name=World'` | 本番モード。ログなし |
+| `composer stree` | `@dev` → `vendor/bin/stree <最新log>` | 直近の log をツリー描画 |
+| `composer stree:full` | 同上、verbose | 全 context key を leaf として展開 |
+
+直接呼ぶ場合:
+
+```bash
+php bin/app.php                                          # 既定 → "Hello World" + log
+php bin/app.php 'hello?name=Alice'                       # 引数を上書き
+MODULE=app php bin/app.php 'hello?name=Alice'            # production-style
+php bin/app.php 'order?customerId=42&items[]=P1001'      # 別 Input + 多引数
+```
+
+`parse_url` + `parse_str` で構文解析。HTTP query と同じ意味論（配列・URL エンコード対応）。将来 `be://order?...` のような URI scheme で BEAR.Sunday から呼び出しても、同じ syntax → 同じ意味、で繋がる設計。
 
 `DevModule` は `AppModule` を install した上で `BecomingInterface` を `DevBecoming` に差し替える。`DevBecoming` は `Becoming` をラップして、呼び出しごとに `Koriym\SemanticLogger` のログを `var/log/` に吐く。
 
