@@ -358,6 +358,64 @@ $becoming = $injector->getInstance(Becoming::class);
 $final = ($becoming)(new HelloInput(name: 'World'));
 ```
 
+### 開発ループ：composer dev / stree
+
+skeletonには2つのエントリポイントがある。どちらも同じ出力（greeting等）を返す。違いはログだけ。
+
+| コマンド | Module | 用途 |
+|----------|--------|------|
+| `php bin/app.php` | `AppModule` | 最小配線の本番形。ログなし |
+| `composer dev` | `DevModule` | パイプライン実行 + `var/log/<timestamp>.json` に意味的ログを書く |
+| `composer stree` | - | `@dev` 実行後、最新のログをツリーで描画 |
+| `composer stree:full` | - | 同上、verbose |
+
+`DevModule` は `AppModule` を install した上で `BecomingInterface` を `DevBecoming` に差し替える。`DevBecoming` は `Becoming` をラップして、呼び出しごとに `Koriym\SemanticLogger` のログを `var/log/` に吐く。
+
+実装中は `composer stree` を繰り返すのが基本ループ：
+
+```
+$ composer stree
+Hello, World!
+becoming from=HelloInput be=Hello input=[name] inject=[greeting]
+⎿ final=Hello prop=[greeting]
+```
+
+**記号の読み方**:
+
+- `becoming from=X be=Y input=[...] inject=[...]` — 開側。どのInputがどのクラスに変容したか、その時の入力と注入
+- `├──` — イベント（ネストした becoming や途中のログ）
+- `⎿` — 閉側の継続行。ひとつの変容の締めくくり
+  - `being=X` — 中間Being（まだ変容が続く）
+  - `final=X` — 終端Final（ここで完了）
+  - `error=<Class> message=<...>` — 失敗
+- `prop=[a, b, c]` — 生成されたプロパティ名。多いと `[a, b, c +N items]` に省略
+
+ツリーが設計どおりの変容チェーンになっているかを、コード読解ではなくログで確認する。分岐・Diamond・Momentも素直にネストで現れる。
+
+### デバッグ：どのビューを見るか
+
+問題に応じて使い分ける。全部 `var/log/<timestamp>.json` が単一の情報源で、`composer stree` はその **圧縮ビュー**。
+
+| 目的 | 見る先 |
+|------|--------|
+| 変容チェーン全体像 | `composer stree` |
+| Context の生値、Property全キー | `composer stree:full` または JSON を直接 |
+| 実行時間・ボトルネック | JSON の各open下 `profile.wallTime`（ms）と `profile.xhprof[]` |
+| 関数レベルの呼び出し追跡 | JSON の `profile.xdebug[].source`（file path） → xdebug trace viewer |
+
+**`composer stree` の記号で不明瞭なとき → JSON 直読み**：
+
+- `⎿ final=Hello prop=[greeting]` で `prop` が `[N items]` 省略されていたら、JSON の `close.context.prop` に全キーと値が載っている
+- event の `[event]` マーカーだけ見えて中身が分からないときも、JSON の `events[]` の対応する context を見る
+
+**性能劣化を追うとき → profile セクション**：
+
+- 各 `open` ノードに `profile.wallTime`（この変容にかかった秒数）
+- `profile.xhprof` にxhprofが書き出したファイルの参照（`[extension=xhprof.so](指定)` で動いてれば）
+- `profile.xdebug[].source` に xdebug trace のファイルパス
+
+xhprof/xdebug 拡張が無い環境では `profile` は空で残る。警告は無視でよい（ログ自体は正常に書かれる）。
+
 ### エラーハンドリング
 
 Semantic変数のバリデーション失敗は `SemanticVariableException` に自動収集される：

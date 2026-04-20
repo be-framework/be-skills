@@ -254,9 +254,11 @@ ALPS を生成しました（design/alps/alps.html を開いています）。
 
 **セットアップ**: `be/SKILL.md` の「プロジェクト開始」セクションに従い、app templateからプロジェクトを作成する。
 
+**動作確認**: `composer dev` でパイプラインを動かし、`composer stree` で変容チェーンをツリー表示する。設計どおりに `Input → (Being →) Final` が繋がっているかをログで確かめる。詳細は `be/SKILL.md` の「開発ループ：composer dev / stree」を参照。
+
 **完了前のセルフチェック — ALPS 整合性レビュー**:
 
-実装が動いた後（テスト緑 + `bin/smoke.php` 確認の後）、`design/alps/alps.xml` を開いて Final クラスと突き合わせる:
+実装が動いた後（テスト緑 + `composer dev` 確認の後）、`design/alps/alps.xml` を開いて Final クラスと突き合わせる:
 
 1. Final の各 public プロパティが ALPS の descriptor に存在するか
 2. ALPS にない属性（計算フィールド、派生プロパティ等）を追加していないか
