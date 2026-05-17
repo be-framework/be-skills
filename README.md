@@ -5,6 +5,7 @@ Agent skills for building applications with the [Be Framework](https://github.co
 ## Skills
 
 - **[be](be/SKILL.md)** — Development workflow: from user stories to ALPS profiles to implementation
+- **[be-review](be-review/SKILL.md)** — Independent code review against the Be principles in `be/SKILL.md`, catching anti-patterns (lying-Being, Diamond mis-classification, Service-named Beings, hidden branching, Reason logic leaks)
 - **[be-semantic](be-semantic/SKILL.md)** — Story → ALPS → Fake → Agreement → Schema → Be workflow
 - **[semantic-ex](semantic-ex/SKILL.md)** — Semantic Exercise: AI-driven data generation → constraint discovery → JSON Schema
 
