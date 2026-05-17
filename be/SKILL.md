@@ -784,6 +784,94 @@ Being から次の Final が選ばれる瞬間や、`#[Input]` パラメータ�
 
 ---
 
+## 設計判断ガイド
+
+「ロジックをどこに置くか」「Being を割るか / Reason に出すか / Branching するか」を判断するためのガイド。実装ルール（書き方）と区別される、**選び方のルール**。
+
+### ロジック配置の決定木
+
+```text
+そのロジックは…
+├─ 外界との対話 (DB / API / 時刻 / 副作用) ?
+│   └─ Reason (Query / Command / Service を #[Inject])
+├─ 入力値の妥当性検証 ?
+│   └─ Semantic クラス
+└─ この Being が「である」ことの計算 ?
+    └─ constructor (Being / Final 自身)
+```
+
+**Anti-pattern**: 純粋計算ロジックを Reason に抽出する欲求が出たら **STOP**。Reason に出すと Being は名前だけで実体がない空のラッパーになる。「マージされたカート」を名乗っているのにマージしていない、という嘘の Being が生まれる。
+
+例:
+
+- ❌ `$mergedCart = $merger->merge(...)` — マージは Being の存在理由そのもの
+- ✅ `$cartCommand->save($mergedCart)` — save は外界対話なので Reason
+
+### Cascade パターンの判定 — 独立性テスト
+
+| パターン | フロー | 判定の決め手 |
+|---|---|---|
+| **Linear/Minimal** | Input → Final | Final で完結する単純変換 |
+| **Linear/Cascade** | Input → Being → Final | 段間に sequential dependency (B が A の出力を `#[Input]` で受ける) |
+| **Cascade Diamond** | Input → 複数 Being → Final | 上流の **順序を入れ替えても等価**、Final に `#[Inject]` で independent に流入 |
+
+> **Diamond 判定の正直さテスト**: 上流 Being の順序を入れ替えられるか?
+> 「順序が意味を持つ」なら Cascade chain。**段数では判定しない**。
+
+Anti-pattern:
+
+- ❌ 段数だけで Diamond を名乗る (3 段 ≠ Diamond)
+- ❌ sequential dependency (B が A の出力に依存する) を Diamond と称する
+
+Branching (medical-triage の `$being` union 型) は別パターンで、上記の Linear / Cascade Diamond とは独立した判定軸。次節を参照。
+
+### Final / Being が厚くなった時の対処順序
+
+constructor が読みづらくなってきたら、以下の順に検討する:
+
+1. **外界対話が混ざってないか?** → ある: Reason に出す
+2. **構造的に異なる状態を `if/??` で吸収してないか?** → ある: Branching に割る
+3. **pre-persistence の純粋計算が嵩んでる?** → 新しい Being を 1 段挟む
+4. **Reason に純粋ロジックを出すのは最終手段ではなく禁じ手** (前述の anti-pattern)
+
+### Branching の発火条件
+
+constructor 内の以下のパターンは「隠れた分岐」のサイン:
+
+- `?? new SomethingElse(...)` で fallback を吸収している
+- `if ($condition) { ... } else { ... }` で根本的に異なる state を構築している
+- 複数の業務ルールが case 別に走る
+
+`#[Be([A::class, B::class])]` で Branching に割ることで、各 Being が自分の case だけを扱う「正直」な姿になる。
+
+ただし **早すぎる Branching は意味の凝集を落とす**。判断基準:
+
+- 各 Being が独立した名前を持てるか? (例: `CartMerged` / `FreshCartCreated`)
+- 各 Being の constructor が短くなるか?
+- 下流 (Final) で同じ振る舞いに合流するなら、Branching の価値は薄い
+
+### 自己レビュー checklist
+
+実装後に必ず通す:
+
+- [ ] 各 Being の名前は **state を描写** しているか (`CartMerger` ではなく `CartMerged`)
+- [ ] constructor は **state の存在を証明** しているか (orchestrator になっていないか)
+- [ ] Reason は **外界対話のみ** か (純粋計算が紛れていないか)
+- [ ] `if/??` で隠れた分岐は Branching に出されているか
+- [ ] **Diamond** と呼んでいるなら上流が本当に **independent** か (順序入れ替え可能か)
+
+### 既知の Anti-patterns
+
+| Anti-pattern | 何が間違いか | 対処 |
+|---|---|---|
+| 純粋ロジックを Reason に出して Being を空にする | Being が嘘になる (名前と実体が一致しない) | ロジックを Being の constructor に戻す |
+| Service 名で Being を作る (`CartMerger`, `OrderProcessor`) | Reason / Service 思考が漏れた | State 名に改める (`CartMerged`, `OrderProcessed`) |
+| 段数で Cascade を Diamond と分類 | 「3 段 = Diamond」の誤った判定軸 | 独立性で判定する (順序入れ替えテスト) |
+| `??` / `if-else` の連発で分岐を吸収 | Branching に出すべき分岐を constructor で隠した | `#[Be([...])]` で分割 |
+| pre-persistence ロジックが Final に集中 | Being を増やす判断ができていない | 新 Being を 1 段挟む |
+
+---
+
 ## 実装前に相談すべき設計判断
 
 1. **Being（中間変換）が必要かどうか** — Direct か Branching かを事前に決める
