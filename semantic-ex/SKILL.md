@@ -31,6 +31,8 @@ ALPS → (Experience) 大量fakeデータ生成 → (Examples) パターン観�
 
 ALPSプロファイルのontology（セマンティックフィールド）を読む。**主タクソノミーあたりレコード 50 件**のリアルなfakeデータを生成する（フィールド単位ではなくレコード単位）。参照される副タクソノミー（例: User、Book、Member 等）は 10〜20 件で可。
 
+ALPS descriptor に `doc href` がある場合は、リンク先のローカル Markdown（例: `design/alps-doc/*.md` / `alps-doc/*.md`）も読む。リンク先は fake データ生成の語彙・背景・境界条件を補う資料として扱い、descriptor 本体の `id` / `type` / `rt` / 子 descriptor を上書きする別仕様として扱わない。リンク先が存在しない場合は欠落として記録し、ALPS 本体の `title` / `doc` から進める。
+
 生成の観点：
 
 - 最短・最長の例
