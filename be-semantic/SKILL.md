@@ -29,10 +29,11 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 ```
 design/
-├── story/    ストーリー（Step 1）
-├── alps/     ALPS プロファイル（Step 2）
-├── fake/     50 件フェイクデータ（Step 3）
-└── schema/   JSON Schema（Step 5）
+├── story/      ストーリー（Step 1）
+├── alps/       ALPS プロファイル（Step 2）
+├── alps-doc/   ALPS 補足ドキュメント（Step 2）
+├── fake/       50 件フェイクデータ（Step 3）
+└── schema/     JSON Schema（Step 5）
 ```
 
 `design/` は **設計の authoritative source of truth**（手で編集、git にコミット）。
@@ -174,6 +175,22 @@ asd design/alps/alps.xml         # バリデーション + HTML生成
 </alps>
 ```
 
+**ALPS doc の粒度**:
+
+- `<doc>` は descriptor の短い意味要約に留める。長い技術背景、判断理由、境界メモ、運用手順を無理に詰め込まない。
+- 詳細が必要な場合は `design/alps-doc/*.md` に分離し、descriptor 直下の `<link rel="describedby" href="..."/>` でリンクする。公開成果物として ALPS をリポジトリ直下に置く場合は `alps-doc/*.md` でもよい。
+- `rel="describedby"` の Markdown は descriptor の意味を補足する資料であって、`id` / `type` / `rt` / 子 descriptor が示す契約を別定義しない。
+- `describedby` のような公的な link relation はそのまま使う。独自 relation を使う場合は bare token にせず、`rel.alps.xml#foo` や `rel.alps.json#foo` のように relation の意味を辿れる URI/fragment を使う。
+- 既存 ALPS に `doc href` が残っている場合は読み取り互換として扱ってよいが、新規に長文補足を追加するときは descriptor-level `link rel="describedby"` を使う。
+
+```xml
+<descriptor id="TodoValidation" type="semantic" tag="be">
+  <doc>Todo title を保存前に検証した中間状態</doc>
+  <link rel="describedby" href="../alps-doc/todo-validation.md" />
+  <descriptor href="#todoTitle" />
+</descriptor>
+```
+
 **タグの使い分け**:
 
 - `tag="api"` — API遷移（ユーザーに見える状態遷移）
@@ -186,7 +203,7 @@ asd design/alps/alps.xml         # バリデーション + HTML生成
 - `do` プレフィックス → unsafe/idempotent（書き込み）
 - `become` プレフィックス → 内部変容遷移（Be固有）
 
-**アウトプット**: `design/alps/alps.xml` + `design/alps/alps.html`（asd生成）
+**アウトプット**: `design/alps/alps.xml` + `design/alps/alps.html`（asd生成） + 必要に応じて `design/alps-doc/*.md`
 
 **インタラクティブモードの確認**（Y モードでは省略）:
 
