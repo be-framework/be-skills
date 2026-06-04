@@ -29,10 +29,11 @@ description: "End-to-end Be application design workflow: Story → ALPS → Fake
 
 ```
 design/
-├── story/    ストーリー（Step 1）
-├── alps/     ALPS プロファイル（Step 2）
-├── fake/     50 件フェイクデータ（Step 3）
-└── schema/   JSON Schema（Step 5）
+├── story/      ストーリー（Step 1）
+├── alps/       ALPS プロファイル（Step 2）
+├── alps-doc/   ALPS 補足ドキュメント（Step 2）
+├── fake/       50 件フェイクデータ（Step 3）
+└── schema/     JSON Schema（Step 5）
 ```
 
 `design/` は **設計の authoritative source of truth**（手で編集、git にコミット）。
